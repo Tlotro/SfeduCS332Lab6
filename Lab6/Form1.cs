@@ -15,6 +15,9 @@ namespace Lab6
     {
         Point3d camPos = new Point3d();
         Point3d camRot = new Point3d();
+        //TODO: this is a function from camera state
+        Matrix ViewMatrix => new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1); 
+        Matrix ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         List<PolyHedron> polyHedrons = new List<PolyHedron>();
         public Form1()
         {
@@ -24,12 +27,21 @@ namespace Lab6
             polyHedrons.Add(PolyHedron.Octahedron(300, 100, 0, 10));
             polyHedrons.Add(PolyHedron.Icosahedron(400, 100, 0, 10));
             polyHedrons.Add(PolyHedron.Dodecahedron(500, 100, 0, 10));
+            this.SetStyle(ControlStyles.DoubleBuffer |
+            ControlStyles.UserPaint |
+            ControlStyles.AllPaintingInWmPaint,
+            true);
+            this.UpdateStyles();
 
             System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
             timer.Interval = (50);
             timer.Tick += new EventHandler(timer_Tick);
             timer.Start();
         }
+        /// <summary>
+        /// ИСПОЛЬЗУЙТЕ ЭТУ ФУНКЦИЮ ДЛЯ ДОБАВЛЕНИЯ
+        /// </summary>
+        /// <param name="polyHedron"></param>
 
         private void timer_Tick(object sender, EventArgs e)
         {
@@ -54,20 +66,69 @@ namespace Lab6
 
         private void draw()
         {
-            Graphics g = Graphics.FromHwnd(this.Handle);
-            g.Clear(Color.White);
+            BufferedGraphicsContext currentContext;
+            BufferedGraphics myBuffer;
+            currentContext = BufferedGraphicsManager.Current;
+            myBuffer = currentContext.Allocate(panel1.CreateGraphics(),panel1.DisplayRectangle);
+            myBuffer.Graphics.Clear(SystemColors.Control);
             //This matrix is reversed when it comes to position and rotation. When you move the camera, everything else moves in reverse
-            Matrix View = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-            Matrix Projection = new Matrix(4,4,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
-            foreach (PolyHedron poly in  polyHedrons) 
+            foreach (PolyHedron poly in polyHedrons) 
             {
-                poly.draw(g,View,Projection);
+                poly.draw(myBuffer.Graphics,ViewMatrix,ProjectionMatrix);
             }
+            myBuffer.Render(); 
+            myBuffer.Dispose();
         }
 
         private void Form1_Shown(object sender, EventArgs e)
         {
             draw();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+        
+        private void Selector_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //У каждого задания своя панель. СМ вид->другие окна->структура документа
+            SpawnPanel.Visible = false; RotatePanel.Visible = false; PerspectivePanel.Visible = false;
+            switch (Selector.SelectedIndex) 
+            {
+                case 0: SpawnPanel.Visible = true; break;
+                case 4:
+                    //Саш, ты можешь обратиться к выбранному многограннику через polyHedrons[RotateSelectDropdown.SelectedIndex]
+                    RotatePanel.Visible = true; RotateSelectDropdown.Items.Clear(); 
+                    foreach (PolyHedron p in polyHedrons) 
+                        RotateSelectDropdown.Items.Add($"{p.Position.X} {p.Position.Y} {p.Position.Z}"); 
+                break;
+                case 5:
+                    PerspectivePanel.Visible = true;
+                break;
+            }
+        }
+
+        //Поворот ------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        private void RotateSelectDropdown_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+        private void RotateButton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        public void drawPoint(Graphics g, Color color, Point3d point)
+        {
+            Point3d p = (Point3d)(point * ViewMatrix * ProjectionMatrix);
+            g.FillEllipse(new Pen(color).Brush, p.X-3, p.Y-3,7,7);
+        }
+        public void drawLine(Graphics g, Color color, Point3d point1, Point3d point2)
+        {
+            Point3d p1 = (Point3d)(point1 * ViewMatrix * ProjectionMatrix);
+            Point3d p2 = (Point3d)(point2 * ViewMatrix * ProjectionMatrix);
+            g.DrawLine(new Pen(color), p1.X, p1.Y, p2.X, p2.Y);
         }
     }
     /// <summary>
@@ -194,6 +255,7 @@ namespace Lab6
             }
         }
 
+
     }
     /// <summary>
     /// Многогранник
@@ -267,9 +329,9 @@ namespace Lab6
         {
             double RX = Math.PI * Rotation.X / 180, RY = Math.PI * Rotation.Y / 180, RZ = Math.PI * Rotation.Z / 180;
             Matrix WorldMatrix = new Matrix(4, 4,
-                (float)(Scale.X*Math.Cos(RY)*Math.Cos(RZ)), (float)(Scale.Y*Math.Cos(RY)*Math.Sin(RZ)), (float)(-Scale.Z*Math.Sin(RY)), 0,
-                (float)(Scale.X * (Math.Sin(RX) * Math.Sin(RY) * Math.Cos(RZ) - Math.Cos(RX) * Math.Sin(RZ))), (float)(Scale.Y * (Math.Sin(RX) * Math.Sin(RY) * Math.Sin(RZ) + Math.Cos(RX) * Math.Cos(RZ))), (float)(Scale.Z * Math.Sin(RX) * Math.Cos(RY)), 0,
-                (float)(Scale.X * (Math.Cos(RX) * Math.Sin(RY) * Math.Cos(RZ) + Math.Sin(RX) * Math.Sin(RZ))), (float)(Scale.Y * (Math.Cos(RX) * Math.Sin(RY) * Math.Sin(RZ) - Math.Sin(RX) * Math.Cos(RZ))), (float)(Scale.Z * Math.Cos(RX) * Math.Cos(RY)), 0,
+                (float)(Scale.X*Math.Cos(RY)*Math.Cos(RZ)), (float)(Scale.X*Math.Cos(RY)*Math.Sin(RZ)), (float)(-Scale.X*Math.Sin(RY)), 0,
+                (float)(Scale.Y * (Math.Sin(RX) * Math.Sin(RY) * Math.Cos(RZ) - Math.Cos(RX) * Math.Sin(RZ))), (float)(Scale.Y * (Math.Sin(RX) * Math.Sin(RY) * Math.Sin(RZ) + Math.Cos(RX) * Math.Cos(RZ))), (float)(Scale.Y * Math.Sin(RX) * Math.Cos(RY)), 0,
+                (float)(Scale.Z * (Math.Cos(RX) * Math.Sin(RY) * Math.Cos(RZ) + Math.Sin(RX) * Math.Sin(RZ))), (float)(Scale.Z * (Math.Cos(RX) * Math.Sin(RY) * Math.Sin(RZ) - Math.Sin(RX) * Math.Cos(RZ))), (float)(Scale.Z * Math.Cos(RX) * Math.Cos(RY)), 0,
                 Position.X, Position.Y, Position.Z, 1);
             foreach (var polygon in polygons) { polygon.draw(g, WorldMatrix, View, Projection); }
         }
