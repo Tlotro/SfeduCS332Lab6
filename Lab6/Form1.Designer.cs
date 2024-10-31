@@ -30,16 +30,21 @@
         {
             this.Selector = new System.Windows.Forms.ComboBox();
             this.SpawnPanel = new System.Windows.Forms.Panel();
+            this.SpawnButton = new System.Windows.Forms.Button();
             this.SpawnZLabel = new System.Windows.Forms.Label();
             this.SpawnYLabel = new System.Windows.Forms.Label();
             this.SpawnXLabel = new System.Windows.Forms.Label();
+            this.SpawnSizeLabel = new System.Windows.Forms.Label();
             this.SpawnSelector = new System.Windows.Forms.ComboBox();
             this.SpawnZBox = new System.Windows.Forms.TextBox();
             this.SpawnYBox = new System.Windows.Forms.TextBox();
             this.SpawnXBox = new System.Windows.Forms.TextBox();
+            this.SpawnSizeBox = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.RotatePanel = new System.Windows.Forms.Panel();
             this.RotateButton = new System.Windows.Forms.Button();
+            this.RotateDeg = new System.Windows.Forms.Label();
+            this.RotateDegBox = new System.Windows.Forms.TextBox();
             this.RotateSelectDropdown = new System.Windows.Forms.ComboBox();
             this.RotatePoint1Label = new System.Windows.Forms.Label();
             this.RotatePoint1XLabel = new System.Windows.Forms.Label();
@@ -57,9 +62,53 @@
             this.RotatePoint2ZBox = new System.Windows.Forms.TextBox();
             this.PerspectivePanel = new System.Windows.Forms.Panel();
             this.PerspectiveBox = new System.Windows.Forms.ComboBox();
+            this.DespawnPanel = new System.Windows.Forms.Panel();
+            this.DespawnButton = new System.Windows.Forms.Button();
+            this.DespawnSelector = new System.Windows.Forms.ComboBox();
+            this.TransformPanel = new System.Windows.Forms.Panel();
+            this.ScaleLabel = new System.Windows.Forms.Label();
+            this.ScaleZLabel = new System.Windows.Forms.Label();
+            this.ScaleYLabel = new System.Windows.Forms.Label();
+            this.ScaleXLabel = new System.Windows.Forms.Label();
+            this.ScaleZ = new System.Windows.Forms.TextBox();
+            this.ScaleY = new System.Windows.Forms.TextBox();
+            this.ScaleX = new System.Windows.Forms.TextBox();
+            this.RotationLabel = new System.Windows.Forms.Label();
+            this.RotationZLabel = new System.Windows.Forms.Label();
+            this.RotationYLabel = new System.Windows.Forms.Label();
+            this.RotationXLabel = new System.Windows.Forms.Label();
+            this.RotationZ = new System.Windows.Forms.TextBox();
+            this.RotationY = new System.Windows.Forms.TextBox();
+            this.RotationX = new System.Windows.Forms.TextBox();
+            this.PositionLabel = new System.Windows.Forms.Label();
+            this.PositionZLabel = new System.Windows.Forms.Label();
+            this.PositionYLabel = new System.Windows.Forms.Label();
+            this.PositionXLabel = new System.Windows.Forms.Label();
+            this.PositionZ = new System.Windows.Forms.TextBox();
+            this.PositionY = new System.Windows.Forms.TextBox();
+            this.PositionX = new System.Windows.Forms.TextBox();
+            this.TransformSelector = new System.Windows.Forms.ComboBox();
+            this.EditPanel = new System.Windows.Forms.Panel();
+            this.EditButton = new System.Windows.Forms.Button();
+            this.EditPolySelector = new System.Windows.Forms.ComboBox();
+            this.EditOpSelector = new System.Windows.Forms.ComboBox();
+            this.EditZLabel = new System.Windows.Forms.Label();
+            this.EditX = new System.Windows.Forms.TextBox();
+            this.EditYLabel = new System.Windows.Forms.Label();
+            this.EditY = new System.Windows.Forms.TextBox();
+            this.EditXLabel = new System.Windows.Forms.Label();
+            this.EditZ = new System.Windows.Forms.TextBox();
+            this.MirrorPanel = new System.Windows.Forms.Panel();
+            this.MirrorButton = new System.Windows.Forms.Button();
+            this.MirrorPolySelector = new System.Windows.Forms.ComboBox();
+            this.MirrorAxisSelector = new System.Windows.Forms.ComboBox();
             this.SpawnPanel.SuspendLayout();
             this.RotatePanel.SuspendLayout();
             this.PerspectivePanel.SuspendLayout();
+            this.DespawnPanel.SuspendLayout();
+            this.TransformPanel.SuspendLayout();
+            this.EditPanel.SuspendLayout();
+            this.MirrorPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // Selector
@@ -73,7 +122,8 @@
             "Изменить",
             "Отразить",
             "Поворот вокруг прямой",
-            "Изменить проекцию"});
+            "Изменить проекцию",
+            "Удалить"});
             this.Selector.Location = new System.Drawing.Point(667, 12);
             this.Selector.Name = "Selector";
             this.Selector.Size = new System.Drawing.Size(121, 21);
@@ -82,19 +132,34 @@
             // 
             // SpawnPanel
             // 
+            this.SpawnPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.SpawnPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.SpawnPanel.Controls.Add(this.SpawnButton);
             this.SpawnPanel.Controls.Add(this.SpawnZLabel);
             this.SpawnPanel.Controls.Add(this.SpawnYLabel);
             this.SpawnPanel.Controls.Add(this.SpawnXLabel);
+            this.SpawnPanel.Controls.Add(this.SpawnSizeLabel);
             this.SpawnPanel.Controls.Add(this.SpawnSelector);
             this.SpawnPanel.Controls.Add(this.SpawnZBox);
             this.SpawnPanel.Controls.Add(this.SpawnYBox);
             this.SpawnPanel.Controls.Add(this.SpawnXBox);
+            this.SpawnPanel.Controls.Add(this.SpawnSizeBox);
             this.SpawnPanel.Location = new System.Drawing.Point(667, 39);
             this.SpawnPanel.Name = "SpawnPanel";
             this.SpawnPanel.Size = new System.Drawing.Size(121, 399);
             this.SpawnPanel.TabIndex = 1;
             this.SpawnPanel.Visible = false;
+            // 
+            // SpawnButton
+            // 
+            this.SpawnButton.Location = new System.Drawing.Point(40, 130);
+            this.SpawnButton.Name = "SpawnButton";
+            this.SpawnButton.Size = new System.Drawing.Size(75, 23);
+            this.SpawnButton.TabIndex = 7;
+            this.SpawnButton.Text = "Создать";
+            this.SpawnButton.UseVisualStyleBackColor = true;
+            this.SpawnButton.Click += new System.EventHandler(this.SpawnButton_Click);
             // 
             // SpawnZLabel
             // 
@@ -123,6 +188,15 @@
             this.SpawnXLabel.TabIndex = 4;
             this.SpawnXLabel.Text = "X";
             // 
+            // SpawnSizeLabel
+            // 
+            this.SpawnSizeLabel.AutoSize = true;
+            this.SpawnSizeLabel.Location = new System.Drawing.Point(3, 107);
+            this.SpawnSizeLabel.Name = "SpawnSizeLabel";
+            this.SpawnSizeLabel.Size = new System.Drawing.Size(15, 13);
+            this.SpawnSizeLabel.TabIndex = 9;
+            this.SpawnSizeLabel.Text = "R";
+            // 
             // SpawnSelector
             // 
             this.SpawnSelector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -144,6 +218,7 @@
             this.SpawnZBox.Name = "SpawnZBox";
             this.SpawnZBox.Size = new System.Drawing.Size(96, 20);
             this.SpawnZBox.TabIndex = 3;
+            this.SpawnZBox.TextChanged += new System.EventHandler(this.Spawn_TextChanged);
             // 
             // SpawnYBox
             // 
@@ -151,6 +226,7 @@
             this.SpawnYBox.Name = "SpawnYBox";
             this.SpawnYBox.Size = new System.Drawing.Size(96, 20);
             this.SpawnYBox.TabIndex = 2;
+            this.SpawnYBox.TextChanged += new System.EventHandler(this.Spawn_TextChanged);
             // 
             // SpawnXBox
             // 
@@ -158,6 +234,14 @@
             this.SpawnXBox.Name = "SpawnXBox";
             this.SpawnXBox.Size = new System.Drawing.Size(96, 20);
             this.SpawnXBox.TabIndex = 1;
+            this.SpawnXBox.TextChanged += new System.EventHandler(this.Spawn_TextChanged);
+            // 
+            // SpawnSizeBox
+            // 
+            this.SpawnSizeBox.Location = new System.Drawing.Point(20, 104);
+            this.SpawnSizeBox.Name = "SpawnSizeBox";
+            this.SpawnSizeBox.Size = new System.Drawing.Size(96, 20);
+            this.SpawnSizeBox.TabIndex = 8;
             // 
             // panel1
             // 
@@ -173,8 +257,12 @@
             // 
             // RotatePanel
             // 
+            this.RotatePanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.RotatePanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.RotatePanel.Controls.Add(this.RotateButton);
+            this.RotatePanel.Controls.Add(this.RotateDeg);
+            this.RotatePanel.Controls.Add(this.RotateDegBox);
             this.RotatePanel.Controls.Add(this.RotateSelectDropdown);
             this.RotatePanel.Controls.Add(this.RotatePoint1Label);
             this.RotatePanel.Controls.Add(this.RotatePoint1XLabel);
@@ -198,13 +286,29 @@
             // 
             // RotateButton
             // 
-            this.RotateButton.Location = new System.Drawing.Point(40, 218);
+            this.RotateButton.Location = new System.Drawing.Point(40, 243);
             this.RotateButton.Name = "RotateButton";
             this.RotateButton.Size = new System.Drawing.Size(75, 23);
             this.RotateButton.TabIndex = 15;
             this.RotateButton.Text = "Повернуть";
             this.RotateButton.UseVisualStyleBackColor = true;
             this.RotateButton.Click += new System.EventHandler(this.RotateButton_Click);
+            // 
+            // RotateDeg
+            // 
+            this.RotateDeg.AutoSize = true;
+            this.RotateDeg.Location = new System.Drawing.Point(4, 220);
+            this.RotateDeg.Name = "RotateDeg";
+            this.RotateDeg.Size = new System.Drawing.Size(15, 13);
+            this.RotateDeg.TabIndex = 17;
+            this.RotateDeg.Text = "D";
+            // 
+            // RotateDegBox
+            // 
+            this.RotateDegBox.Location = new System.Drawing.Point(20, 217);
+            this.RotateDegBox.Name = "RotateDegBox";
+            this.RotateDegBox.Size = new System.Drawing.Size(96, 20);
+            this.RotateDegBox.TabIndex = 16;
             // 
             // RotateSelectDropdown
             // 
@@ -240,6 +344,7 @@
             this.RotatePoint1XBox.Name = "RotatePoint1XBox";
             this.RotatePoint1XBox.Size = new System.Drawing.Size(96, 20);
             this.RotatePoint1XBox.TabIndex = 3;
+            this.RotatePoint1XBox.TextChanged += new System.EventHandler(this.RotatePoint_TextChanged);
             // 
             // RotatePoint1YLabel
             // 
@@ -256,6 +361,7 @@
             this.RotatePoint1YBox.Name = "RotatePoint1YBox";
             this.RotatePoint1YBox.Size = new System.Drawing.Size(96, 20);
             this.RotatePoint1YBox.TabIndex = 2;
+            this.RotatePoint1YBox.TextChanged += new System.EventHandler(this.RotatePoint_TextChanged);
             // 
             // RotatePoint1ZLabel
             // 
@@ -272,6 +378,7 @@
             this.RotatePoint1ZBox.Name = "RotatePoint1ZBox";
             this.RotatePoint1ZBox.Size = new System.Drawing.Size(96, 20);
             this.RotatePoint1ZBox.TabIndex = 1;
+            this.RotatePoint1ZBox.TextChanged += new System.EventHandler(this.RotatePoint_TextChanged);
             // 
             // RotatePoint2Label
             // 
@@ -297,6 +404,7 @@
             this.RotatePoint2XBox.Name = "RotatePoint2XBox";
             this.RotatePoint2XBox.Size = new System.Drawing.Size(96, 20);
             this.RotatePoint2XBox.TabIndex = 9;
+            this.RotatePoint2XBox.TextChanged += new System.EventHandler(this.RotatePoint_TextChanged);
             // 
             // RotatePoint2YLabel
             // 
@@ -313,6 +421,7 @@
             this.RotatePoint2YBox.Name = "RotatePoint2YBox";
             this.RotatePoint2YBox.Size = new System.Drawing.Size(96, 20);
             this.RotatePoint2YBox.TabIndex = 10;
+            this.RotatePoint2YBox.TextChanged += new System.EventHandler(this.RotatePoint_TextChanged);
             // 
             // RotatePoint2ZLabel
             // 
@@ -329,9 +438,12 @@
             this.RotatePoint2ZBox.Name = "RotatePoint2ZBox";
             this.RotatePoint2ZBox.Size = new System.Drawing.Size(96, 20);
             this.RotatePoint2ZBox.TabIndex = 11;
+            this.RotatePoint2ZBox.TextChanged += new System.EventHandler(this.RotatePoint_TextChanged);
             // 
             // PerspectivePanel
             // 
+            this.PerspectivePanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.PerspectivePanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.PerspectivePanel.Controls.Add(this.PerspectiveBox);
             this.PerspectivePanel.Location = new System.Drawing.Point(667, 39);
@@ -344,18 +456,442 @@
             // 
             this.PerspectiveBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.PerspectiveBox.FormattingEnabled = true;
+            this.PerspectiveBox.Items.AddRange(new object[] {
+            "Аксонометрическая",
+            "Перспективная"});
             this.PerspectiveBox.Location = new System.Drawing.Point(0, 0);
             this.PerspectiveBox.Name = "PerspectiveBox";
             this.PerspectiveBox.Size = new System.Drawing.Size(121, 21);
             this.PerspectiveBox.TabIndex = 0;
+            this.PerspectiveBox.SelectedIndexChanged += new System.EventHandler(this.PerspectiveBox_SelectedIndexChanged);
+            // 
+            // DespawnPanel
+            // 
+            this.DespawnPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.DespawnPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.DespawnPanel.Controls.Add(this.DespawnButton);
+            this.DespawnPanel.Controls.Add(this.DespawnSelector);
+            this.DespawnPanel.Location = new System.Drawing.Point(667, 39);
+            this.DespawnPanel.Name = "DespawnPanel";
+            this.DespawnPanel.Size = new System.Drawing.Size(121, 399);
+            this.DespawnPanel.TabIndex = 10;
+            this.DespawnPanel.Visible = false;
+            // 
+            // DespawnButton
+            // 
+            this.DespawnButton.Location = new System.Drawing.Point(40, 26);
+            this.DespawnButton.Name = "DespawnButton";
+            this.DespawnButton.Size = new System.Drawing.Size(75, 23);
+            this.DespawnButton.TabIndex = 7;
+            this.DespawnButton.Text = "Удалить";
+            this.DespawnButton.UseVisualStyleBackColor = true;
+            this.DespawnButton.Click += new System.EventHandler(this.DespawnButton_Click);
+            // 
+            // DespawnSelector
+            // 
+            this.DespawnSelector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.DespawnSelector.FormattingEnabled = true;
+            this.DespawnSelector.Items.AddRange(new object[] {
+            "Тетраэдр",
+            "Гексаэдр",
+            "Октаэдр",
+            "Икосаэдр",
+            "Додекаэдр"});
+            this.DespawnSelector.Location = new System.Drawing.Point(0, 0);
+            this.DespawnSelector.Name = "DespawnSelector";
+            this.DespawnSelector.Size = new System.Drawing.Size(121, 21);
+            this.DespawnSelector.TabIndex = 0;
+            this.DespawnSelector.SelectedIndexChanged += new System.EventHandler(this.DespawnSelector_SelectedIndexChanged);
+            // 
+            // TransformPanel
+            // 
+            this.TransformPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TransformPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.TransformPanel.Controls.Add(this.ScaleLabel);
+            this.TransformPanel.Controls.Add(this.ScaleZLabel);
+            this.TransformPanel.Controls.Add(this.ScaleYLabel);
+            this.TransformPanel.Controls.Add(this.ScaleXLabel);
+            this.TransformPanel.Controls.Add(this.ScaleZ);
+            this.TransformPanel.Controls.Add(this.ScaleY);
+            this.TransformPanel.Controls.Add(this.ScaleX);
+            this.TransformPanel.Controls.Add(this.RotationLabel);
+            this.TransformPanel.Controls.Add(this.RotationZLabel);
+            this.TransformPanel.Controls.Add(this.RotationYLabel);
+            this.TransformPanel.Controls.Add(this.RotationXLabel);
+            this.TransformPanel.Controls.Add(this.RotationZ);
+            this.TransformPanel.Controls.Add(this.RotationY);
+            this.TransformPanel.Controls.Add(this.RotationX);
+            this.TransformPanel.Controls.Add(this.PositionLabel);
+            this.TransformPanel.Controls.Add(this.PositionZLabel);
+            this.TransformPanel.Controls.Add(this.PositionYLabel);
+            this.TransformPanel.Controls.Add(this.PositionXLabel);
+            this.TransformPanel.Controls.Add(this.PositionZ);
+            this.TransformPanel.Controls.Add(this.PositionY);
+            this.TransformPanel.Controls.Add(this.PositionX);
+            this.TransformPanel.Controls.Add(this.TransformSelector);
+            this.TransformPanel.Location = new System.Drawing.Point(667, 39);
+            this.TransformPanel.Name = "TransformPanel";
+            this.TransformPanel.Size = new System.Drawing.Size(121, 399);
+            this.TransformPanel.TabIndex = 17;
+            this.TransformPanel.Visible = false;
+            // 
+            // ScaleLabel
+            // 
+            this.ScaleLabel.AutoSize = true;
+            this.ScaleLabel.Location = new System.Drawing.Point(80, 214);
+            this.ScaleLabel.Name = "ScaleLabel";
+            this.ScaleLabel.Size = new System.Drawing.Size(34, 13);
+            this.ScaleLabel.TabIndex = 16;
+            this.ScaleLabel.Text = "Scale";
+            // 
+            // ScaleZLabel
+            // 
+            this.ScaleZLabel.AutoSize = true;
+            this.ScaleZLabel.Location = new System.Drawing.Point(3, 285);
+            this.ScaleZLabel.Name = "ScaleZLabel";
+            this.ScaleZLabel.Size = new System.Drawing.Size(14, 13);
+            this.ScaleZLabel.TabIndex = 22;
+            this.ScaleZLabel.Text = "Z";
+            // 
+            // ScaleYLabel
+            // 
+            this.ScaleYLabel.AutoSize = true;
+            this.ScaleYLabel.Location = new System.Drawing.Point(3, 259);
+            this.ScaleYLabel.Name = "ScaleYLabel";
+            this.ScaleYLabel.Size = new System.Drawing.Size(14, 13);
+            this.ScaleYLabel.TabIndex = 21;
+            this.ScaleYLabel.Text = "Y";
+            // 
+            // ScaleXLabel
+            // 
+            this.ScaleXLabel.AutoSize = true;
+            this.ScaleXLabel.Location = new System.Drawing.Point(3, 233);
+            this.ScaleXLabel.Name = "ScaleXLabel";
+            this.ScaleXLabel.Size = new System.Drawing.Size(14, 13);
+            this.ScaleXLabel.TabIndex = 20;
+            this.ScaleXLabel.Text = "X";
+            // 
+            // ScaleZ
+            // 
+            this.ScaleZ.Location = new System.Drawing.Point(20, 282);
+            this.ScaleZ.Name = "ScaleZ";
+            this.ScaleZ.Size = new System.Drawing.Size(96, 20);
+            this.ScaleZ.TabIndex = 19;
+            this.ScaleZ.TextChanged += new System.EventHandler(this.Transform_TextChanged);
+            // 
+            // ScaleY
+            // 
+            this.ScaleY.Location = new System.Drawing.Point(20, 256);
+            this.ScaleY.Name = "ScaleY";
+            this.ScaleY.Size = new System.Drawing.Size(96, 20);
+            this.ScaleY.TabIndex = 18;
+            this.ScaleY.TextChanged += new System.EventHandler(this.Transform_TextChanged);
+            // 
+            // ScaleX
+            // 
+            this.ScaleX.Location = new System.Drawing.Point(20, 230);
+            this.ScaleX.Name = "ScaleX";
+            this.ScaleX.Size = new System.Drawing.Size(96, 20);
+            this.ScaleX.TabIndex = 17;
+            this.ScaleX.TextChanged += new System.EventHandler(this.Transform_TextChanged);
+            // 
+            // RotationLabel
+            // 
+            this.RotationLabel.AutoSize = true;
+            this.RotationLabel.Location = new System.Drawing.Point(67, 123);
+            this.RotationLabel.Name = "RotationLabel";
+            this.RotationLabel.Size = new System.Drawing.Size(47, 13);
+            this.RotationLabel.TabIndex = 15;
+            this.RotationLabel.Text = "Rotation";
+            // 
+            // RotationZLabel
+            // 
+            this.RotationZLabel.AutoSize = true;
+            this.RotationZLabel.Location = new System.Drawing.Point(3, 194);
+            this.RotationZLabel.Name = "RotationZLabel";
+            this.RotationZLabel.Size = new System.Drawing.Size(14, 13);
+            this.RotationZLabel.TabIndex = 14;
+            this.RotationZLabel.Text = "Z";
+            // 
+            // RotationYLabel
+            // 
+            this.RotationYLabel.AutoSize = true;
+            this.RotationYLabel.Location = new System.Drawing.Point(3, 168);
+            this.RotationYLabel.Name = "RotationYLabel";
+            this.RotationYLabel.Size = new System.Drawing.Size(14, 13);
+            this.RotationYLabel.TabIndex = 13;
+            this.RotationYLabel.Text = "Y";
+            // 
+            // RotationXLabel
+            // 
+            this.RotationXLabel.AutoSize = true;
+            this.RotationXLabel.Location = new System.Drawing.Point(3, 142);
+            this.RotationXLabel.Name = "RotationXLabel";
+            this.RotationXLabel.Size = new System.Drawing.Size(14, 13);
+            this.RotationXLabel.TabIndex = 12;
+            this.RotationXLabel.Text = "X";
+            // 
+            // RotationZ
+            // 
+            this.RotationZ.Location = new System.Drawing.Point(20, 191);
+            this.RotationZ.Name = "RotationZ";
+            this.RotationZ.Size = new System.Drawing.Size(96, 20);
+            this.RotationZ.TabIndex = 11;
+            this.RotationZ.TextChanged += new System.EventHandler(this.Transform_TextChanged);
+            // 
+            // RotationY
+            // 
+            this.RotationY.Location = new System.Drawing.Point(20, 165);
+            this.RotationY.Name = "RotationY";
+            this.RotationY.Size = new System.Drawing.Size(96, 20);
+            this.RotationY.TabIndex = 10;
+            this.RotationY.TextChanged += new System.EventHandler(this.Transform_TextChanged);
+            // 
+            // RotationX
+            // 
+            this.RotationX.Location = new System.Drawing.Point(20, 139);
+            this.RotationX.Name = "RotationX";
+            this.RotationX.Size = new System.Drawing.Size(96, 20);
+            this.RotationX.TabIndex = 9;
+            this.RotationX.TextChanged += new System.EventHandler(this.Transform_TextChanged);
+            // 
+            // PositionLabel
+            // 
+            this.PositionLabel.AutoSize = true;
+            this.PositionLabel.Location = new System.Drawing.Point(70, 29);
+            this.PositionLabel.Name = "PositionLabel";
+            this.PositionLabel.Size = new System.Drawing.Size(44, 13);
+            this.PositionLabel.TabIndex = 8;
+            this.PositionLabel.Text = "Position";
+            // 
+            // PositionZLabel
+            // 
+            this.PositionZLabel.AutoSize = true;
+            this.PositionZLabel.Location = new System.Drawing.Point(3, 103);
+            this.PositionZLabel.Name = "PositionZLabel";
+            this.PositionZLabel.Size = new System.Drawing.Size(14, 13);
+            this.PositionZLabel.TabIndex = 6;
+            this.PositionZLabel.Text = "Z";
+            // 
+            // PositionYLabel
+            // 
+            this.PositionYLabel.AutoSize = true;
+            this.PositionYLabel.Location = new System.Drawing.Point(3, 77);
+            this.PositionYLabel.Name = "PositionYLabel";
+            this.PositionYLabel.Size = new System.Drawing.Size(14, 13);
+            this.PositionYLabel.TabIndex = 5;
+            this.PositionYLabel.Text = "Y";
+            // 
+            // PositionXLabel
+            // 
+            this.PositionXLabel.AutoSize = true;
+            this.PositionXLabel.Location = new System.Drawing.Point(3, 51);
+            this.PositionXLabel.Name = "PositionXLabel";
+            this.PositionXLabel.Size = new System.Drawing.Size(14, 13);
+            this.PositionXLabel.TabIndex = 4;
+            this.PositionXLabel.Text = "X";
+            // 
+            // PositionZ
+            // 
+            this.PositionZ.Location = new System.Drawing.Point(20, 100);
+            this.PositionZ.Name = "PositionZ";
+            this.PositionZ.Size = new System.Drawing.Size(96, 20);
+            this.PositionZ.TabIndex = 3;
+            this.PositionZ.TextChanged += new System.EventHandler(this.Transform_TextChanged);
+            // 
+            // PositionY
+            // 
+            this.PositionY.Location = new System.Drawing.Point(20, 74);
+            this.PositionY.Name = "PositionY";
+            this.PositionY.Size = new System.Drawing.Size(96, 20);
+            this.PositionY.TabIndex = 2;
+            this.PositionY.TextChanged += new System.EventHandler(this.Transform_TextChanged);
+            // 
+            // PositionX
+            // 
+            this.PositionX.Location = new System.Drawing.Point(20, 48);
+            this.PositionX.Name = "PositionX";
+            this.PositionX.Size = new System.Drawing.Size(96, 20);
+            this.PositionX.TabIndex = 1;
+            this.PositionX.TextChanged += new System.EventHandler(this.Transform_TextChanged);
+            // 
+            // TransformSelector
+            // 
+            this.TransformSelector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.TransformSelector.FormattingEnabled = true;
+            this.TransformSelector.Items.AddRange(new object[] {
+            "Тетраэдр",
+            "Гексаэдр",
+            "Октаэдр",
+            "Икосаэдр",
+            "Додекаэдр"});
+            this.TransformSelector.Location = new System.Drawing.Point(0, 0);
+            this.TransformSelector.Name = "TransformSelector";
+            this.TransformSelector.Size = new System.Drawing.Size(121, 21);
+            this.TransformSelector.TabIndex = 0;
+            this.TransformSelector.SelectedIndexChanged += new System.EventHandler(this.TransformSelector_SelectedIndexChanged);
+            // 
+            // EditPanel
+            // 
+            this.EditPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.EditPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.EditPanel.Controls.Add(this.EditButton);
+            this.EditPanel.Controls.Add(this.EditPolySelector);
+            this.EditPanel.Controls.Add(this.EditOpSelector);
+            this.EditPanel.Controls.Add(this.EditZLabel);
+            this.EditPanel.Controls.Add(this.EditX);
+            this.EditPanel.Controls.Add(this.EditYLabel);
+            this.EditPanel.Controls.Add(this.EditY);
+            this.EditPanel.Controls.Add(this.EditXLabel);
+            this.EditPanel.Controls.Add(this.EditZ);
+            this.EditPanel.Location = new System.Drawing.Point(667, 39);
+            this.EditPanel.Name = "EditPanel";
+            this.EditPanel.Size = new System.Drawing.Size(121, 399);
+            this.EditPanel.TabIndex = 18;
+            this.EditPanel.Visible = false;
+            // 
+            // EditButton
+            // 
+            this.EditButton.Location = new System.Drawing.Point(41, 126);
+            this.EditButton.Name = "EditButton";
+            this.EditButton.Size = new System.Drawing.Size(75, 23);
+            this.EditButton.TabIndex = 15;
+            this.EditButton.Text = "Применить";
+            this.EditButton.UseVisualStyleBackColor = true;
+            this.EditButton.Click += new System.EventHandler(this.EditButton_Click);
+            // 
+            // EditPolySelector
+            // 
+            this.EditPolySelector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.EditPolySelector.FormattingEnabled = true;
+            this.EditPolySelector.Location = new System.Drawing.Point(-1, -1);
+            this.EditPolySelector.Name = "EditPolySelector";
+            this.EditPolySelector.Size = new System.Drawing.Size(121, 21);
+            this.EditPolySelector.TabIndex = 0;
+            this.EditPolySelector.SelectedIndexChanged += new System.EventHandler(this.EditPolySelector_SelectedIndexChanged);
+            // 
+            // EditOpSelector
+            // 
+            this.EditOpSelector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.EditOpSelector.FormattingEnabled = true;
+            this.EditOpSelector.Items.AddRange(new object[] {
+            "Сдвинуть",
+            "Повернуть",
+            "Масштабировать"});
+            this.EditOpSelector.Location = new System.Drawing.Point(-1, 21);
+            this.EditOpSelector.Name = "EditOpSelector";
+            this.EditOpSelector.Size = new System.Drawing.Size(121, 21);
+            this.EditOpSelector.TabIndex = 16;
+            // 
+            // EditZLabel
+            // 
+            this.EditZLabel.AutoSize = true;
+            this.EditZLabel.Location = new System.Drawing.Point(3, 103);
+            this.EditZLabel.Name = "EditZLabel";
+            this.EditZLabel.Size = new System.Drawing.Size(14, 13);
+            this.EditZLabel.TabIndex = 6;
+            this.EditZLabel.Text = "Z";
+            // 
+            // EditX
+            // 
+            this.EditX.Location = new System.Drawing.Point(20, 48);
+            this.EditX.Name = "EditX";
+            this.EditX.Size = new System.Drawing.Size(96, 20);
+            this.EditX.TabIndex = 3;
+            // 
+            // EditYLabel
+            // 
+            this.EditYLabel.AutoSize = true;
+            this.EditYLabel.Location = new System.Drawing.Point(3, 77);
+            this.EditYLabel.Name = "EditYLabel";
+            this.EditYLabel.Size = new System.Drawing.Size(14, 13);
+            this.EditYLabel.TabIndex = 5;
+            this.EditYLabel.Text = "Y";
+            // 
+            // EditY
+            // 
+            this.EditY.Location = new System.Drawing.Point(20, 74);
+            this.EditY.Name = "EditY";
+            this.EditY.Size = new System.Drawing.Size(96, 20);
+            this.EditY.TabIndex = 2;
+            // 
+            // EditXLabel
+            // 
+            this.EditXLabel.AutoSize = true;
+            this.EditXLabel.Location = new System.Drawing.Point(3, 51);
+            this.EditXLabel.Name = "EditXLabel";
+            this.EditXLabel.Size = new System.Drawing.Size(14, 13);
+            this.EditXLabel.TabIndex = 4;
+            this.EditXLabel.Text = "X";
+            // 
+            // EditZ
+            // 
+            this.EditZ.Location = new System.Drawing.Point(20, 100);
+            this.EditZ.Name = "EditZ";
+            this.EditZ.Size = new System.Drawing.Size(96, 20);
+            this.EditZ.TabIndex = 1;
+            // 
+            // MirrorPanel
+            // 
+            this.MirrorPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MirrorPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.MirrorPanel.Controls.Add(this.MirrorButton);
+            this.MirrorPanel.Controls.Add(this.MirrorPolySelector);
+            this.MirrorPanel.Controls.Add(this.MirrorAxisSelector);
+            this.MirrorPanel.Location = new System.Drawing.Point(667, 39);
+            this.MirrorPanel.Name = "MirrorPanel";
+            this.MirrorPanel.Size = new System.Drawing.Size(121, 399);
+            this.MirrorPanel.TabIndex = 19;
+            this.MirrorPanel.Visible = false;
+            // 
+            // MirrorButton
+            // 
+            this.MirrorButton.Location = new System.Drawing.Point(41, 45);
+            this.MirrorButton.Name = "MirrorButton";
+            this.MirrorButton.Size = new System.Drawing.Size(75, 23);
+            this.MirrorButton.TabIndex = 15;
+            this.MirrorButton.Text = "Применить";
+            this.MirrorButton.UseVisualStyleBackColor = true;
+            this.MirrorButton.Click += new System.EventHandler(this.MirrorButton_Click);
+            // 
+            // MirrorPolySelector
+            // 
+            this.MirrorPolySelector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.MirrorPolySelector.FormattingEnabled = true;
+            this.MirrorPolySelector.Location = new System.Drawing.Point(-1, -1);
+            this.MirrorPolySelector.Name = "MirrorPolySelector";
+            this.MirrorPolySelector.Size = new System.Drawing.Size(121, 21);
+            this.MirrorPolySelector.TabIndex = 0;
+            this.MirrorPolySelector.SelectedIndexChanged += new System.EventHandler(this.MirrorPolySelector_SelectedIndexChanged);
+            // 
+            // MirrorAxisSelector
+            // 
+            this.MirrorAxisSelector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.MirrorAxisSelector.FormattingEnabled = true;
+            this.MirrorAxisSelector.Items.AddRange(new object[] {
+            "YZ",
+            "XZ",
+            "XY"});
+            this.MirrorAxisSelector.Location = new System.Drawing.Point(-1, 21);
+            this.MirrorAxisSelector.Name = "MirrorAxisSelector";
+            this.MirrorAxisSelector.Size = new System.Drawing.Size(121, 21);
+            this.MirrorAxisSelector.TabIndex = 16;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.PerspectivePanel);
             this.Controls.Add(this.RotatePanel);
+            this.Controls.Add(this.MirrorPanel);
+            this.Controls.Add(this.PerspectivePanel);
+            this.Controls.Add(this.EditPanel);
+            this.Controls.Add(this.TransformPanel);
+            this.Controls.Add(this.DespawnPanel);
             this.Controls.Add(this.SpawnPanel);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.Selector);
@@ -369,6 +905,12 @@
             this.RotatePanel.ResumeLayout(false);
             this.RotatePanel.PerformLayout();
             this.PerspectivePanel.ResumeLayout(false);
+            this.DespawnPanel.ResumeLayout(false);
+            this.TransformPanel.ResumeLayout(false);
+            this.TransformPanel.PerformLayout();
+            this.EditPanel.ResumeLayout(false);
+            this.EditPanel.PerformLayout();
+            this.MirrorPanel.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -386,7 +928,6 @@
         private System.Windows.Forms.TextBox SpawnXBox;
         private System.Windows.Forms.Label SpawnZLabel;
         private System.Windows.Forms.Panel RotatePanel;
-        private System.Windows.Forms.Label RotatePoint1Label;
         private System.Windows.Forms.Label RotatePoint1XLabel;
         private System.Windows.Forms.Label RotatePoint1YLabel;
         private System.Windows.Forms.Label RotatePoint1ZLabel;
@@ -394,16 +935,62 @@
         private System.Windows.Forms.TextBox RotatePoint1XBox;
         private System.Windows.Forms.TextBox RotatePoint1YBox;
         private System.Windows.Forms.TextBox RotatePoint1ZBox;
-        private System.Windows.Forms.Label RotatePoint2ZLabel;
-        private System.Windows.Forms.Label RotatePoint2YLabel;
-        private System.Windows.Forms.Label RotatePoint2XLabel;
-        private System.Windows.Forms.TextBox RotatePoint2ZBox;
-        private System.Windows.Forms.TextBox RotatePoint2YBox;
-        private System.Windows.Forms.TextBox RotatePoint2XBox;
-        private System.Windows.Forms.Label RotatePoint2Label;
         private System.Windows.Forms.Button RotateButton;
         private System.Windows.Forms.Panel PerspectivePanel;
         private System.Windows.Forms.ComboBox PerspectiveBox;
+        private System.Windows.Forms.Button SpawnButton;
+        private System.Windows.Forms.Label SpawnSizeLabel;
+        private System.Windows.Forms.TextBox SpawnSizeBox;
+        private System.Windows.Forms.Panel DespawnPanel;
+        private System.Windows.Forms.Button DespawnButton;
+        private System.Windows.Forms.ComboBox DespawnSelector;
+        private System.Windows.Forms.Panel TransformPanel;
+        private System.Windows.Forms.Label PositionLabel;
+        private System.Windows.Forms.Label PositionZLabel;
+        private System.Windows.Forms.Label PositionYLabel;
+        private System.Windows.Forms.Label PositionXLabel;
+        private System.Windows.Forms.ComboBox TransformSelector;
+        private System.Windows.Forms.TextBox PositionZ;
+        private System.Windows.Forms.TextBox PositionY;
+        private System.Windows.Forms.TextBox PositionX;
+        private System.Windows.Forms.Label ScaleLabel;
+        private System.Windows.Forms.Label ScaleZLabel;
+        private System.Windows.Forms.Label ScaleYLabel;
+        private System.Windows.Forms.Label ScaleXLabel;
+        private System.Windows.Forms.TextBox ScaleZ;
+        private System.Windows.Forms.TextBox ScaleY;
+        private System.Windows.Forms.TextBox ScaleX;
+        private System.Windows.Forms.Label RotationLabel;
+        private System.Windows.Forms.Label RotationZLabel;
+        private System.Windows.Forms.Label RotationYLabel;
+        private System.Windows.Forms.Label RotationXLabel;
+        private System.Windows.Forms.TextBox RotationZ;
+        private System.Windows.Forms.TextBox RotationY;
+        private System.Windows.Forms.TextBox RotationX;
+        private System.Windows.Forms.Label RotatePoint1Label;
+        private System.Windows.Forms.Label RotatePoint2Label;
+        private System.Windows.Forms.Label RotatePoint2XLabel;
+        private System.Windows.Forms.TextBox RotatePoint2XBox;
+        private System.Windows.Forms.Label RotatePoint2YLabel;
+        private System.Windows.Forms.TextBox RotatePoint2YBox;
+        private System.Windows.Forms.Label RotatePoint2ZLabel;
+        private System.Windows.Forms.TextBox RotatePoint2ZBox;
+        private System.Windows.Forms.Panel EditPanel;
+        private System.Windows.Forms.Button EditButton;
+        private System.Windows.Forms.ComboBox EditPolySelector;
+        private System.Windows.Forms.Label EditZLabel;
+        private System.Windows.Forms.TextBox EditX;
+        private System.Windows.Forms.Label EditYLabel;
+        private System.Windows.Forms.TextBox EditY;
+        private System.Windows.Forms.Label EditXLabel;
+        private System.Windows.Forms.TextBox EditZ;
+        private System.Windows.Forms.ComboBox EditOpSelector;
+        private System.Windows.Forms.Panel MirrorPanel;
+        private System.Windows.Forms.Button MirrorButton;
+        private System.Windows.Forms.ComboBox MirrorPolySelector;
+        private System.Windows.Forms.ComboBox MirrorAxisSelector;
+        private System.Windows.Forms.Label RotateDeg;
+        private System.Windows.Forms.TextBox RotateDegBox;
     }
 }
 

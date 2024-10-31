@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,10 +16,14 @@ namespace Lab6
     {
         Point3d camPos = new Point3d();
         Point3d camRot = new Point3d();
+        Func<Point3d, PointF> projectionFunc = AxonometricProjection;
+        bool textchanging = true;
         //TODO: this is a function from camera state
         Matrix ViewMatrix => new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1); 
         Matrix ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         List<PolyHedron> polyHedrons = new List<PolyHedron>();
+        List<Point3d> ExtraPoints = new List<Point3d>();
+        List<KeyValuePair<Point3d,Point3d>> ExtraLines = new List<KeyValuePair<Point3d, Point3d>>();
         public Form1()
         {
             InitializeComponent();
@@ -32,16 +37,12 @@ namespace Lab6
             ControlStyles.AllPaintingInWmPaint,
             true);
             this.UpdateStyles();
-
-            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            //Animate
+            /*System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
             timer.Interval = (50);
             timer.Tick += new EventHandler(timer_Tick);
-            timer.Start();
+            timer.Start();*/
         }
-        /// <summary>
-        /// ИСПОЛЬЗУЙТЕ ЭТУ ФУНКЦИЮ ДЛЯ ДОБАВЛЕНИЯ
-        /// </summary>
-        /// <param name="polyHedron"></param>
 
         private void timer_Tick(object sender, EventArgs e)
         {
@@ -74,10 +75,25 @@ namespace Lab6
             //This matrix is reversed when it comes to position and rotation. When you move the camera, everything else moves in reverse
             foreach (PolyHedron poly in polyHedrons) 
             {
-                poly.draw(myBuffer.Graphics,ViewMatrix,ProjectionMatrix);
+                poly.draw(myBuffer.Graphics,ViewMatrix,ProjectionMatrix, projectionFunc);
             }
+            foreach (var point in ExtraPoints)
+                drawPoint(myBuffer.Graphics, Color.Green, point);
+            foreach (var line in ExtraLines)
+                drawLine(myBuffer.Graphics, Color.Green, line.Key, line.Value);
             myBuffer.Render(); 
             myBuffer.Dispose();
+        }
+        public void drawPoint(Graphics g, Color color, Point3d point1)
+        {
+            PointF p1 = projectionFunc((Point3d)(point1 * ViewMatrix * ProjectionMatrix));
+            g.FillEllipse(new Pen(color).Brush, p1.X-3, p1.Y-3, 7,7);
+        }
+        public void drawLine(Graphics g, Color color, Point3d point1, Point3d point2)
+        {
+            PointF p1 = projectionFunc((Point3d)(point1 * ViewMatrix * ProjectionMatrix));
+            PointF p2 = projectionFunc((Point3d)(point2 * ViewMatrix * ProjectionMatrix));
+            g.DrawLine(new Pen(color), p1.X, p1.Y, p2.X, p2.Y);
         }
 
         private void Form1_Shown(object sender, EventArgs e)
@@ -92,43 +108,334 @@ namespace Lab6
         
         private void Selector_SelectedIndexChanged(object sender, EventArgs e)
         {
+            ExtraLines.Clear();
+            ExtraPoints.Clear();
             //У каждого задания своя панель. СМ вид->другие окна->структура документа
-            SpawnPanel.Visible = false; RotatePanel.Visible = false; PerspectivePanel.Visible = false;
+            SpawnPanel.Visible = false;
+            TransformPanel.Visible = false;
+            EditPanel.Visible = false;
+            MirrorPanel.Visible = false;
+            RotatePanel.Visible = false; 
+            PerspectivePanel.Visible = false;
+            DespawnPanel.Visible = false;
+            draw();
             switch (Selector.SelectedIndex) 
             {
                 case 0: SpawnPanel.Visible = true; break;
+                case 1:
+                    TransformPanel.Visible = true;
+                    TransformSelector.Items.Clear();
+                    foreach (PolyHedron p in polyHedrons)
+                        TransformSelector.Items.Add($"{p.Position.X} {p.Position.Y} {p.Position.Z}");
+                    break;
+                case 2:
+                    EditPanel.Visible = true;
+                    EditPolySelector.Items.Clear();
+                    foreach (PolyHedron p in polyHedrons)
+                        EditPolySelector.Items.Add($"{p.Position.X} {p.Position.Y} {p.Position.Z}");
+                    break;
+                case 3:
+                    MirrorPanel.Visible = true;
+                    MirrorPolySelector.Items.Clear();
+                    foreach (PolyHedron p in polyHedrons)
+                        MirrorPolySelector.Items.Add($"{p.Position.X} {p.Position.Y} {p.Position.Z}");
+                    break;
                 case 4:
                     //Саш, ты можешь обратиться к выбранному многограннику через polyHedrons[RotateSelectDropdown.SelectedIndex]
-                    RotatePanel.Visible = true; RotateSelectDropdown.Items.Clear(); 
+                    RotatePanel.Visible = true; 
+                    RotateSelectDropdown.Items.Clear(); 
                     foreach (PolyHedron p in polyHedrons) 
                         RotateSelectDropdown.Items.Add($"{p.Position.X} {p.Position.Y} {p.Position.Z}"); 
                 break;
                 case 5:
-                    PerspectivePanel.Visible = true;
-                break;
+                    PerspectivePanel.Visible = true; 
+                    MirrorPolySelector.Items.Clear();
+                    foreach (PolyHedron p in polyHedrons)
+                        MirrorPolySelector.Items.Add($"{p.Position.X} {p.Position.Y} {p.Position.Z}");
+                    break;
+                case 6:
+                    DespawnPanel.Visible = true;
+                    DespawnSelector.Items.Clear();
+                    foreach (PolyHedron p in polyHedrons)
+                        DespawnSelector.Items.Add($"{p.Position.X} {p.Position.Y} {p.Position.Z}");
+                    break;
             }
+        }
+        //Создание------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        private void SpawnButton_Click(object sender, EventArgs e)
+        {
+            float X, Y, Z, R;
+            if (float.TryParse(SpawnXBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out X) && float.TryParse(SpawnYBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Y) && float.TryParse(SpawnZBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Z) && float.TryParse(SpawnSizeBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out R))
+                switch (SpawnSelector.SelectedIndex)
+                {
+                    /*Тетраэдр
+                    Гексаэдр
+                    Октаэдр
+                    Икосаэдр
+                    Додекаэдр*/
+                    case 0:
+                        polyHedrons.Add(PolyHedron.Tetrahedron(X, Y, Z, R));
+                        break;
+                    case 1:
+                        polyHedrons.Add(PolyHedron.Hexahedron(X, Y, Z, R));
+                        break;
+                    case 2:
+                        polyHedrons.Add(PolyHedron.Octahedron(X, Y, Z, R));
+                        break;
+                    case 3:
+                        polyHedrons.Add(PolyHedron.Icosahedron(X, Y, Z, R));
+                        break;
+                    case 4:
+                        polyHedrons.Add(PolyHedron.Dodecahedron(X, Y, Z, R));
+                        break;
+                }
+            draw();
+        }
+        private void Spawn_TextChanged(object sender, EventArgs e)
+        {
+            ExtraPoints.Clear();
+            float X, Y, Z;
+            if (float.TryParse(SpawnXBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out X) && float.TryParse(SpawnYBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Y) && float.TryParse(SpawnZBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Z))
+            {
+                ExtraPoints.Add(new Point3d(X, Y, Z));
+            }
+            draw();
+        }
+
+        //Преобразование
+        private void TransformSelector_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            textchanging = false;
+                ExtraPoints.Clear();
+                PolyHedron P = polyHedrons[TransformSelector.SelectedIndex];
+                ExtraPoints.Add(new Point3d(P.Position.X, P.Position.Y, P.Position.Z));
+                PositionX.Text = P.Position.X.ToString();
+                PositionY.Text = P.Position.Y.ToString();
+                PositionZ.Text = P.Position.Z.ToString();
+                RotationX.Text = P.Rotation.X.ToString();
+                RotationY.Text = P.Rotation.Y.ToString();
+                RotationZ.Text = P.Rotation.Z.ToString();
+                ScaleX.Text = P.Scale.X.ToString();
+                ScaleY.Text = P.Scale.Y.ToString();
+                ScaleZ.Text = P.Scale.Z.ToString();
+                draw();
+            textchanging = true;
+        }
+        private void Transform_TextChanged(object sender, EventArgs e)
+        {
+            if (textchanging)
+            {
+                PolyHedron P = polyHedrons[TransformSelector.SelectedIndex];
+                ExtraPoints.Clear();
+                float.TryParse(PositionX.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Position.X);
+                float.TryParse(PositionY.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Position.Y);
+                float.TryParse(PositionZ.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Position.Z);
+                float.TryParse(RotationX.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Rotation.X);
+                float.TryParse(RotationY.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Rotation.Y);
+                float.TryParse(RotationZ.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Rotation.Z);
+                float.TryParse(ScaleX.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Scale.X);
+                float.TryParse(ScaleY.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Scale.Y);
+                float.TryParse(ScaleZ.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Scale.Z);
+                ExtraPoints.Add(new Point3d(P.Position.X, P.Position.Y, P.Position.Z));
+                int index = TransformSelector.SelectedIndex;
+                TransformSelector.Items.RemoveAt(index);
+                TransformSelector.Items.Insert(index, $"{P.Position.X} {P.Position.Y} {P.Position.Z}");
+                TransformSelector.SelectedIndex = index;
+                draw();
+            }
+        }
+
+        //Изменение ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+        private void EditPolySelector_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ExtraPoints.Clear();
+            PolyHedron P = polyHedrons[EditPolySelector.SelectedIndex];
+            ExtraPoints.Add(new Point3d(P.Position.X, P.Position.Y, P.Position.Z));
+            draw();
+        }
+        private void EditButton_Click(object sender, EventArgs e)
+        {
+            float X, Y, Z;
+            if (float.TryParse(EditX.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out X) && float.TryParse(EditY.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Y) && float.TryParse(EditZ.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Z))
+            switch (EditOpSelector.SelectedIndex) 
+            {
+                case 0:
+
+                    polyHedrons[EditPolySelector.SelectedIndex].Apply(new Matrix(4,4,1,0,0,0,0,1,0,0,0,0,1,0,X,Y,Z,1));
+                    break;
+                    case 1:
+
+                        double RX = Math.PI * X / 180, RY = Math.PI * Y / 180, RZ = Math.PI * Z / 180;
+                        polyHedrons[EditPolySelector.SelectedIndex].Apply(new Matrix(4, 4,
+                            (float)(Math.Cos(RY) * Math.Cos(RZ)), (float)(Math.Cos(RY) * Math.Sin(RZ)), (float)(-Math.Sin(RY)), 0,
+                            (float)((Math.Sin(RX) * Math.Sin(RY) * Math.Cos(RZ) - Math.Cos(RX) * Math.Sin(RZ))), (float)((Math.Sin(RX) * Math.Sin(RY) * Math.Sin(RZ) + Math.Cos(RX) * Math.Cos(RZ))), (float)(Math.Sin(RX) * Math.Cos(RY)), 0,
+                            (float)((Math.Cos(RX) * Math.Sin(RY) * Math.Cos(RZ) + Math.Sin(RX) * Math.Sin(RZ))), (float)((Math.Cos(RX) * Math.Sin(RY) * Math.Sin(RZ) - Math.Sin(RX) * Math.Cos(RZ))), (float)(Math.Cos(RX) * Math.Cos(RY)), 0,
+                            0, 0, 0, 1
+                            ));
+                        break;
+                    case 2:
+
+                        polyHedrons[EditPolySelector.SelectedIndex].Apply(new Matrix(4, 4, X, 0, 0, 0, 0, Y, 0, 0, 0, 0, Z, 0, 0, 0, 0, 1));
+                        break;
+                }
+            draw();
+        }
+
+
+        private void MirrorPolySelector_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ExtraPoints.Clear();
+            PolyHedron P = polyHedrons[MirrorPolySelector.SelectedIndex];
+            ExtraPoints.Add(new Point3d(P.Position.X, P.Position.Y, P.Position.Z));
+            draw();
         }
 
         //Поворот ------------------------------------------------------------------------------------------------------------------------------------------------------------------
         private void RotateSelectDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            ExtraPoints.Clear();
+            PolyHedron P = polyHedrons[RotateSelectDropdown.SelectedIndex];
+            ExtraPoints.Add(new Point3d(P.Position.X, P.Position.Y, P.Position.Z));
+            draw();
         }
         private void RotateButton_Click(object sender, EventArgs e)
         {
+            float X1,Y1,Z1,X2,Y2,Z2,Deg,DegX;
+            if (float.TryParse(RotatePoint1XBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out X1) && float.TryParse(RotatePoint1YBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Y1) && float.TryParse(RotatePoint1ZBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Z1) &&
+                float.TryParse(RotatePoint2XBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out X2) && float.TryParse(RotatePoint2YBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Y2) && float.TryParse(RotatePoint2ZBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Z2) &&
+                float.TryParse(RotateDegBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Deg)
+                )
+            {
+                DegX = (float)(Deg * Math.PI / 180);
 
+                // Точки оси поворота
+                Point3d axisPoint1 = new Point3d(X1, Y1, Z1);
+                Point3d axisPoint2 = new Point3d(X2, Y2, Z2);
+
+                RotateAroundAxis(polyHedrons[RotateSelectDropdown.SelectedIndex], axisPoint1, axisPoint2, DegX);
+                draw();
+            }
         }
 
-        public void drawPoint(Graphics g, Color color, Point3d point)
+        private void RotateAroundAxis(PolyHedron poly, Point3d axisPoint1, Point3d axisPoint2, float angle)
         {
-            Point3d p = (Point3d)(point * ViewMatrix * ProjectionMatrix);
-            g.FillEllipse(new Pen(color).Brush, p.X-3, p.Y-3,7,7);
+            // Вектор оси поворота
+            Point3d axis = new Point3d(axisPoint2.X - axisPoint1.X, axisPoint2.Y - axisPoint1.Y, axisPoint2.Z - axisPoint1.Z);
+            float conlen = axis.Length();
+            axis.X /= conlen;
+            axis.Y /= conlen;
+            axis.Z /= conlen;
+
+            float cosTheta = (float)Math.Cos(angle);
+            float sinTheta = (float)Math.Sin(angle);
+
+            // Матрица поворота
+            /*Matrix rotationMatrix = new Matrix(4, 4,
+            axis.X * axis.X * (1 - cosTheta) + cosTheta, axis.X * axis.Y * (1 - cosTheta) - axis.Z * sinTheta, axis.X * axis.Z * (1 - cosTheta) + axis.Y * sinTheta, 0,
+            axis.X * axis.Y * (1 - cosTheta) + axis.Z * sinTheta, axis.Y * axis.Y * (1 - cosTheta) + cosTheta, axis.Y * axis.Z * (1 - cosTheta) - axis.X * sinTheta, 0,
+            axis.X * axis.Z * (1 - cosTheta) - axis.Y * sinTheta, axis.Y * axis.Z * (1 - cosTheta) + axis.X * sinTheta, axis.Z * axis.Z * (1 - cosTheta) + cosTheta, 0,
+            0, 0, 0, 1
+            );*/
+
+            Matrix rotationMatrix = new Matrix(4, 4,
+            axis.X * axis.X * (1 - cosTheta) + cosTheta, axis.X * axis.Y * (1 - cosTheta) + axis.Z * sinTheta, axis.X * axis.Z * (1 - cosTheta) - axis.Y * sinTheta, 0,
+             axis.X * axis.Y * (1 - cosTheta) - axis.Z * sinTheta, axis.Y * axis.Y * (1 - cosTheta) + cosTheta, axis.Y * axis.Z * (1 - cosTheta) + axis.X * sinTheta, 0,
+            axis.X * axis.Z * (1 - cosTheta) + axis.Y * sinTheta, axis.Y * axis.Z * (1 - cosTheta) - axis.X * sinTheta, axis.Z * axis.Z * (1 - cosTheta) + cosTheta, 0,
+            0, 0, 0, 1
+            );
+
+            /*Matrix rotationMatrix = new Matrix(4, 4,
+            axis.X * axis.X + cosTheta * (1 - axis.X * axis.X), axis.X * axis.Y * (1 - cosTheta) + axis.Z * sinTheta, axis.X * axis.Z * (1 - cosTheta) - axis.Y * sinTheta, 0,
+            axis.X * axis.Y * (1 - cosTheta) - axis.Z * sinTheta, axis.Y * axis.Y + (1 - axis.Y * axis.Y) * cosTheta, axis.Y * axis.Z * (1 - cosTheta) + axis.X * sinTheta, 0,
+            axis.X * axis.Z * (1 - cosTheta) + axis.Y * sinTheta, axis.Y * axis.Z * (1 - cosTheta) - axis.X * sinTheta, axis.Z * axis.Z + (1 - axis.Z * axis.Z) * cosTheta, 0,
+            0, 0, 0, 1
+            );*/
+
+            poly.Apply(rotationMatrix);
         }
-        public void drawLine(Graphics g, Color color, Point3d point1, Point3d point2)
+
+
+        //Удаление -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+        private void DespawnSelector_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Point3d p1 = (Point3d)(point1 * ViewMatrix * ProjectionMatrix);
-            Point3d p2 = (Point3d)(point2 * ViewMatrix * ProjectionMatrix);
-            g.DrawLine(new Pen(color), p1.X, p1.Y, p2.X, p2.Y);
+            ExtraPoints.Clear();
+            PolyHedron P = polyHedrons[DespawnSelector.SelectedIndex];
+            ExtraPoints.Add(new Point3d(P.Position.X, P.Position.Y, P.Position.Z));
+            draw();
+        }
+
+        private void DespawnButton_Click(object sender, EventArgs e)
+        {
+            if (DespawnSelector.SelectedIndex != -1)
+            {
+                ExtraPoints.Clear();
+                polyHedrons.RemoveAt(DespawnSelector.SelectedIndex);
+                DespawnSelector.Items.RemoveAt(DespawnSelector.SelectedIndex);
+                draw();
+            }
+        }
+
+        private void MirrorButton_Click(object sender, EventArgs e)
+        {
+            Matrix matrix;
+            switch (MirrorAxisSelector.SelectedIndex)
+            {
+                case 0:
+                    matrix = new Matrix(4,4,-1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+                    break;
+                case 1:
+                    matrix = new Matrix(4, 4, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0,1);
+                    break;
+                case 2:
+                    matrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0,1);
+                    break;
+                default:
+                    matrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                    break;
+            }
+            polyHedrons[MirrorPolySelector.SelectedIndex].Apply(matrix);
+            draw();
+        }
+        private static PointF PerspectiveProjection(Point3d point)
+        {
+            float distance = 500.0f;
+            float factor = distance / (distance + point.Z);
+            return new PointF(point.X * factor, point.Y * factor);
+        }
+
+        private static PointF AxonometricProjection(Point3d point)
+        {
+            return new PointF(point.X, point.Y);
+        }
+
+        private void PerspectiveBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch (PerspectiveBox.SelectedIndex) 
+            {
+                case 0:
+                    projectionFunc = AxonometricProjection; break;
+                case 1:
+                    projectionFunc = PerspectiveProjection; break;
+            }
+            draw();
+        }
+
+        private void RotatePoint_TextChanged(object sender, EventArgs e)
+        {
+            ExtraLines.Clear();
+            Point3d a = new Point3d();
+            Point3d b = new Point3d();
+            if(
+            float.TryParse(RotatePoint1XBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out a.X) &&
+            float.TryParse(RotatePoint1YBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out a.Y) &&
+            float.TryParse(RotatePoint1ZBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out a.Z) &&
+            float.TryParse(RotatePoint2XBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out b.X) &&
+            float.TryParse(RotatePoint2YBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out b.Y) &&
+            float.TryParse(RotatePoint2ZBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out b.Z)
+            )
+            ExtraLines.Add(new KeyValuePair<Point3d, Point3d>(a, b));
+            draw();
         }
     }
     /// <summary>
@@ -213,6 +520,10 @@ namespace Lab6
         {
             return new Matrix(4,1,point.X,point.Y,point.Z,1);
         }
+        public float Length()
+        {
+            return (float)Math.Sqrt(X * X + Y * Y + Z * Z);
+        }
     }   
     /// <summary>
     /// Многоугольник
@@ -244,13 +555,13 @@ namespace Lab6
             points.Add(point);
         }
         
-        public void draw(Graphics g, Matrix World, Matrix View, Matrix Projection)
+        public void draw(Graphics g, Matrix World, Matrix View, Matrix Projection, Func<Point3d,PointF> projectionFunc)
         {
             Point3d oldpnt = (Point3d)(points.Last() * World * View * Projection);
             for (int i = 0; i < points.Count; i++) 
             {
                 Point3d pnt = (Point3d)(points[i] * World * View * Projection);
-                g.DrawLine(_pen, oldpnt.X, oldpnt.Y, pnt.X, pnt.Y);
+                g.DrawLine(_pen, projectionFunc(oldpnt), projectionFunc(pnt));
                 oldpnt = pnt;
             }
         }
@@ -325,7 +636,7 @@ namespace Lab6
         /// <param name="g"></param>
         /// <param name="View"> Матрица камеры</param>
         /// <param name="Projection"> Матрица проекций</param>
-        public void draw(Graphics g, Matrix View, Matrix Projection)
+        public void draw(Graphics g, Matrix View, Matrix Projection, Func<Point3d, PointF> projectionFunc)
         {
             double RX = Math.PI * Rotation.X / 180, RY = Math.PI * Rotation.Y / 180, RZ = Math.PI * Rotation.Z / 180;
             Matrix WorldMatrix = new Matrix(4, 4,
@@ -333,8 +644,10 @@ namespace Lab6
                 (float)(Scale.Y * (Math.Sin(RX) * Math.Sin(RY) * Math.Cos(RZ) - Math.Cos(RX) * Math.Sin(RZ))), (float)(Scale.Y * (Math.Sin(RX) * Math.Sin(RY) * Math.Sin(RZ) + Math.Cos(RX) * Math.Cos(RZ))), (float)(Scale.Y * Math.Sin(RX) * Math.Cos(RY)), 0,
                 (float)(Scale.Z * (Math.Cos(RX) * Math.Sin(RY) * Math.Cos(RZ) + Math.Sin(RX) * Math.Sin(RZ))), (float)(Scale.Z * (Math.Cos(RX) * Math.Sin(RY) * Math.Sin(RZ) - Math.Sin(RX) * Math.Cos(RZ))), (float)(Scale.Z * Math.Cos(RX) * Math.Cos(RY)), 0,
                 Position.X, Position.Y, Position.Z, 1);
-            foreach (var polygon in polygons) { polygon.draw(g, WorldMatrix, View, Projection); }
+            foreach (var polygon in polygons) { polygon.draw(g, WorldMatrix, View, Projection, projectionFunc); }
         }
+        //use index for referencing points
+        //mirror for in-world plane
 
         /// <summary>
         /// Тетраэдр
@@ -344,7 +657,7 @@ namespace Lab6
         /// <param name="Z"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static PolyHedron Tetrahedron(float X, float Y, float Z, int n)
+        public static PolyHedron Tetrahedron(float X, float Y, float Z, float n)
         {
             Point3d point1 = new Point3d(-n, -n, -n);
             Point3d point2 = new Point3d(n, n, -n);
@@ -360,7 +673,7 @@ namespace Lab6
         /// <param name="Z"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static PolyHedron Hexahedron(float X, float Y, float Z, int n)
+        public static PolyHedron Hexahedron(float X, float Y, float Z, float n)
         {
             Point3d point1 = new Point3d(-n, -n, n);
             Point3d point2 = new Point3d(-n, n, n);
@@ -380,7 +693,7 @@ namespace Lab6
         /// <param name="Z"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static PolyHedron Octahedron(float X, float Y, float Z, int n)
+        public static PolyHedron Octahedron(float X, float Y, float Z, float n)
         {
             const float lenmult = 1.41421356237f;
             Point3d point1 = new Point3d(lenmult * n, 0, 0);
@@ -399,7 +712,7 @@ namespace Lab6
         /// <param name="Z"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static PolyHedron Icosahedron(float X, float Y, float Z, int n)
+        public static PolyHedron Icosahedron(float X, float Y, float Z, float n)
         {
             const float GR = 1.61803398875f;
             Point3d point1 = new Point3d(0, n, GR * n);
@@ -436,7 +749,7 @@ namespace Lab6
         /// <param name="Z"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static PolyHedron Dodecahedron(float X, float Y, float Z, int n)
+        public static PolyHedron Dodecahedron(float X, float Y, float Z, float n)
         {
             float N = n/2.7f;
             const float GR = 1.61803398875f;
