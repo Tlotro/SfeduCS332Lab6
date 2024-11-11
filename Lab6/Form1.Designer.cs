@@ -102,6 +102,7 @@
             this.MirrorButton = new System.Windows.Forms.Button();
             this.MirrorPolySelector = new System.Windows.Forms.ComboBox();
             this.MirrorAxisSelector = new System.Windows.Forms.ComboBox();
+            this.MirrorPlaneBox = new System.Windows.Forms.TextBox();
             this.SpawnPanel.SuspendLayout();
             this.RotatePanel.SuspendLayout();
             this.PerspectivePanel.SuspendLayout();
@@ -842,6 +843,7 @@
             this.MirrorPanel.Controls.Add(this.MirrorButton);
             this.MirrorPanel.Controls.Add(this.MirrorPolySelector);
             this.MirrorPanel.Controls.Add(this.MirrorAxisSelector);
+            this.MirrorPanel.Controls.Add(this.MirrorPlaneBox);
             this.MirrorPanel.Location = new System.Drawing.Point(667, 39);
             this.MirrorPanel.Name = "MirrorPanel";
             this.MirrorPanel.Size = new System.Drawing.Size(121, 399);
@@ -850,7 +852,7 @@
             // 
             // MirrorButton
             // 
-            this.MirrorButton.Location = new System.Drawing.Point(41, 45);
+            this.MirrorButton.Location = new System.Drawing.Point(41, 74);
             this.MirrorButton.Name = "MirrorButton";
             this.MirrorButton.Size = new System.Drawing.Size(75, 23);
             this.MirrorButton.TabIndex = 15;
@@ -881,13 +883,20 @@
             this.MirrorAxisSelector.Size = new System.Drawing.Size(121, 21);
             this.MirrorAxisSelector.TabIndex = 16;
             // 
+            // MirrorPlaneBox
+            // 
+            this.MirrorPlaneBox.Location = new System.Drawing.Point(3, 48);
+            this.MirrorPlaneBox.Name = "MirrorPlaneBox";
+            this.MirrorPlaneBox.Size = new System.Drawing.Size(113, 20);
+            this.MirrorPlaneBox.TabIndex = 17;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.RotatePanel);
             this.Controls.Add(this.MirrorPanel);
+            this.Controls.Add(this.RotatePanel);
             this.Controls.Add(this.PerspectivePanel);
             this.Controls.Add(this.EditPanel);
             this.Controls.Add(this.TransformPanel);
@@ -911,6 +920,7 @@
             this.EditPanel.ResumeLayout(false);
             this.EditPanel.PerformLayout();
             this.MirrorPanel.ResumeLayout(false);
+            this.MirrorPanel.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -991,6 +1001,7 @@
         private System.Windows.Forms.ComboBox MirrorAxisSelector;
         private System.Windows.Forms.Label RotateDeg;
         private System.Windows.Forms.TextBox RotateDegBox;
+        private System.Windows.Forms.TextBox MirrorPlaneBox;
     }
 }
 

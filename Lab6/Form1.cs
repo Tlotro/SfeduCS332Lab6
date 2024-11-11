@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,7 +17,6 @@ namespace Lab6
     {
         Point3d camPos = new Point3d();
         Point3d camRot = new Point3d();
-        Func<Point3d, PointF> projectionFunc = AxonometricProjection;
         bool textchanging = true;
         //TODO: this is a function from camera state
         Matrix ViewMatrix => new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1); 
@@ -38,10 +38,10 @@ namespace Lab6
             true);
             this.UpdateStyles();
             //Animate
-            /*System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-            timer.Interval = (50);
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            timer.Interval = (500);
             timer.Tick += new EventHandler(timer_Tick);
-            timer.Start();*/
+            timer.Start();
         }
 
         private void timer_Tick(object sender, EventArgs e)
@@ -75,7 +75,7 @@ namespace Lab6
             //This matrix is reversed when it comes to position and rotation. When you move the camera, everything else moves in reverse
             foreach (PolyHedron poly in polyHedrons) 
             {
-                poly.draw(myBuffer.Graphics,ViewMatrix,ProjectionMatrix, projectionFunc);
+                poly.draw(myBuffer.Graphics,ViewMatrix,ProjectionMatrix);
             }
             foreach (var point in ExtraPoints)
                 drawPoint(myBuffer.Graphics, Color.Green, point);
@@ -86,13 +86,13 @@ namespace Lab6
         }
         public void drawPoint(Graphics g, Color color, Point3d point1)
         {
-            PointF p1 = projectionFunc((Point3d)(point1 * ViewMatrix * ProjectionMatrix));
+            PointF p1 = (Point3d)(point1 * ViewMatrix * ProjectionMatrix);
             g.FillEllipse(new Pen(color).Brush, p1.X-3, p1.Y-3, 7,7);
         }
         public void drawLine(Graphics g, Color color, Point3d point1, Point3d point2)
         {
-            PointF p1 = projectionFunc((Point3d)(point1 * ViewMatrix * ProjectionMatrix));
-            PointF p2 = projectionFunc((Point3d)(point2 * ViewMatrix * ProjectionMatrix));
+            PointF p1 = (Point3d)(point1 * ViewMatrix * ProjectionMatrix);
+            PointF p2 = (Point3d)(point2 * ViewMatrix * ProjectionMatrix);
             g.DrawLine(new Pen(color), p1.X, p1.Y, p2.X, p2.Y);
         }
 
@@ -330,27 +330,12 @@ namespace Lab6
             float cosTheta = (float)Math.Cos(angle);
             float sinTheta = (float)Math.Sin(angle);
 
-            // Матрица поворота
-            /*Matrix rotationMatrix = new Matrix(4, 4,
-            axis.X * axis.X * (1 - cosTheta) + cosTheta, axis.X * axis.Y * (1 - cosTheta) - axis.Z * sinTheta, axis.X * axis.Z * (1 - cosTheta) + axis.Y * sinTheta, 0,
-            axis.X * axis.Y * (1 - cosTheta) + axis.Z * sinTheta, axis.Y * axis.Y * (1 - cosTheta) + cosTheta, axis.Y * axis.Z * (1 - cosTheta) - axis.X * sinTheta, 0,
-            axis.X * axis.Z * (1 - cosTheta) - axis.Y * sinTheta, axis.Y * axis.Z * (1 - cosTheta) + axis.X * sinTheta, axis.Z * axis.Z * (1 - cosTheta) + cosTheta, 0,
-            0, 0, 0, 1
-            );*/
-
             Matrix rotationMatrix = new Matrix(4, 4,
             axis.X * axis.X * (1 - cosTheta) + cosTheta, axis.X * axis.Y * (1 - cosTheta) + axis.Z * sinTheta, axis.X * axis.Z * (1 - cosTheta) - axis.Y * sinTheta, 0,
              axis.X * axis.Y * (1 - cosTheta) - axis.Z * sinTheta, axis.Y * axis.Y * (1 - cosTheta) + cosTheta, axis.Y * axis.Z * (1 - cosTheta) + axis.X * sinTheta, 0,
             axis.X * axis.Z * (1 - cosTheta) + axis.Y * sinTheta, axis.Y * axis.Z * (1 - cosTheta) - axis.X * sinTheta, axis.Z * axis.Z * (1 - cosTheta) + cosTheta, 0,
             0, 0, 0, 1
             );
-
-            /*Matrix rotationMatrix = new Matrix(4, 4,
-            axis.X * axis.X + cosTheta * (1 - axis.X * axis.X), axis.X * axis.Y * (1 - cosTheta) + axis.Z * sinTheta, axis.X * axis.Z * (1 - cosTheta) - axis.Y * sinTheta, 0,
-            axis.X * axis.Y * (1 - cosTheta) - axis.Z * sinTheta, axis.Y * axis.Y + (1 - axis.Y * axis.Y) * cosTheta, axis.Y * axis.Z * (1 - cosTheta) + axis.X * sinTheta, 0,
-            axis.X * axis.Z * (1 - cosTheta) + axis.Y * sinTheta, axis.Y * axis.Z * (1 - cosTheta) - axis.X * sinTheta, axis.Z * axis.Z + (1 - axis.Z * axis.Z) * cosTheta, 0,
-            0, 0, 0, 1
-            );*/
 
             poly.Apply(rotationMatrix);
         }
@@ -378,35 +363,24 @@ namespace Lab6
 
         private void MirrorButton_Click(object sender, EventArgs e)
         {
-            Matrix matrix;
+            float shift;
+            if (float.TryParse(MirrorPlaneBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out shift))
             switch (MirrorAxisSelector.SelectedIndex)
             {
                 case 0:
-                    matrix = new Matrix(4,4,-1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+                    polyHedrons[MirrorPolySelector.SelectedIndex].Scale.X *= -1;
+                        polyHedrons[MirrorPolySelector.SelectedIndex].Position.X = shift * 2 - polyHedrons[MirrorPolySelector.SelectedIndex].Position.X;
                     break;
                 case 1:
-                    matrix = new Matrix(4, 4, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0,1);
+                    polyHedrons[MirrorPolySelector.SelectedIndex].Scale.Y *= -1;
+                        polyHedrons[MirrorPolySelector.SelectedIndex].Position.Y = shift * 2 - polyHedrons[MirrorPolySelector.SelectedIndex].Position.Y;
                     break;
                 case 2:
-                    matrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0,1);
-                    break;
-                default:
-                    matrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                    polyHedrons[MirrorPolySelector.SelectedIndex].Scale.Z *= -1;
+                        polyHedrons[MirrorPolySelector.SelectedIndex].Position.Z = shift * 2 - polyHedrons[MirrorPolySelector.SelectedIndex].Position.Z;
                     break;
             }
-            polyHedrons[MirrorPolySelector.SelectedIndex].Apply(matrix);
             draw();
-        }
-        private static PointF PerspectiveProjection(Point3d point)
-        {
-            float distance = 500.0f;
-            float factor = distance / (distance + point.Z);
-            return new PointF(point.X * factor, point.Y * factor);
-        }
-
-        private static PointF AxonometricProjection(Point3d point)
-        {
-            return new PointF(point.X, point.Y);
         }
 
         private void PerspectiveBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -414,9 +388,12 @@ namespace Lab6
             switch (PerspectiveBox.SelectedIndex) 
             {
                 case 0:
-                    projectionFunc = AxonometricProjection; break;
+                    ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                    break;
                 case 1:
-                    projectionFunc = PerspectiveProjection; break;
+                    //Change This
+                    ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                    break;
             }
             draw();
         }
@@ -489,9 +466,9 @@ namespace Lab6
         }
     }
     /// <summary>
-    /// Точка
+    /// Точка.
     /// </summary>
-    public class Point3d
+    public struct Point3d
     {
         public float X;
         public float Y;
@@ -508,10 +485,6 @@ namespace Lab6
         public override int GetHashCode() => base.GetHashCode();
         public static bool operator ==(Point3d left, Point3d right) => (left.X == right.X) && (left.Y == right.Y) && (left.Z == right.Z);
         public static bool operator !=(Point3d left, Point3d right) => !((left.X == right.X) && (left.Y == right.Y) && (left.Z == right.Z));
-        public Point3d()
-        {
-            X = 0; Y = 0; Z = 0;
-        }
         public Point3d(float x, float y, float z)
         {
             X = x; Y = y; Z = z;
@@ -520,68 +493,53 @@ namespace Lab6
         {
             return new Matrix(4,1,point.X,point.Y,point.Z,1);
         }
+        public static implicit operator PointF(Point3d point)
+        {
+            return new PointF(point.X, point.Y);
+        }
         public float Length()
         {
             return (float)Math.Sqrt(X * X + Y * Y + Z * Z);
         }
     }   
-    /// <summary>
-    /// Многоугольник
-    /// </summary>
-    public class Polygon
-    {
-        public List<Point3d> points;
-        public Pen _pen;
-
-        public Polygon() 
-        {
-            points = new List<Point3d>();
-            _pen = new Pen(Color.Black);
-        }
-        public Polygon(params Point3d[] points)
-        {
-            this.points = points.ToList();
-            _pen = new Pen(Color.Black);
-        }
-
-        public Polygon(Color color, params Point3d[] points)
-        {
-            this.points = points.ToList();
-            _pen = new Pen(color);
-        }
-
-        public void Add(Point3d point)
-        {
-            points.Add(point);
-        }
-        
-        public void draw(Graphics g, Matrix World, Matrix View, Matrix Projection, Func<Point3d,PointF> projectionFunc)
-        {
-            Point3d oldpnt = (Point3d)(points.Last() * World * View * Projection);
-            for (int i = 0; i < points.Count; i++) 
-            {
-                Point3d pnt = (Point3d)(points[i] * World * View * Projection);
-                g.DrawLine(_pen, projectionFunc(oldpnt), projectionFunc(pnt));
-                oldpnt = pnt;
-            }
-        }
-
-
-    }
+    
     /// <summary>
     /// Многогранник
     /// </summary>
     public class PolyHedron
-    {
+    {/// <summary>
+     /// Многоугольник
+     /// </summary>
+        public class Polygon
+        {
+            /// <summary>
+            /// positions of the points in the polyhedron. This is going to be "fun"
+            /// </summary>
+            public List<int> points;
+            public Pen pen;
+
+            public Polygon()
+            {
+                points = new List<int>();
+                pen = new Pen(Color.Black);
+            }
+            public Polygon(params int[] points)
+            {
+                this.points = points.ToList();
+                pen = new Pen(Color.Black);
+            }
+
+            public Polygon(Color color, params int[] points)
+            {
+                this.points = points.ToList();
+                pen = new Pen(color);
+            }
+        }
         public Point3d Position;
         public Point3d Rotation;
         public Point3d Scale;
         public List<Polygon> polygons;
-        /// <summary>
-        /// Если нужно трансформировать многогранник, используйте набор точек, не список многоугольников. 
-        /// В многоугольниках будут повторы, это приведет к многократному повторению операций для определенных точек.
-        /// </summary>
-        public HashSet<Point3d> points { get { return polygons.SelectMany( i => i.points).ToHashSet(); } }
+        public List<Point3d> points;
         public PolyHedron() 
         {
             Position = new Point3d();
@@ -589,25 +547,28 @@ namespace Lab6
             Scale = new Point3d(1,1,1);
             polygons = new List<Polygon>();
         }
-        public PolyHedron(params Polygon[] polygons)
+        public PolyHedron(Point3d[] points, params Polygon[] polygons)
         {
             Position = new Point3d();
             Rotation = new Point3d();
             Scale = new Point3d(1,1,1);
+            this.points = points.ToList();
             this.polygons = polygons.ToList();
         }
-        public PolyHedron(Point3d position, Point3d rotation, Point3d scale, params Polygon[] polygons)
+        public PolyHedron(Point3d position, Point3d rotation, Point3d scale, Point3d[] points, params Polygon[] polygons)
         {
             Position = position;
             Rotation = rotation;
             Scale = scale;
+            this.points = points.ToList();
             this.polygons = polygons.ToList();
         }
-        public PolyHedron(Point3d position, params Polygon[] polygons)
+        public PolyHedron(Point3d position, Point3d[] points, params Polygon[] polygons)
         {
             Position = position;
             Rotation = new Point3d();
             Scale = new Point3d(1, 1, 1);
+            this.points = points.ToList();
             this.polygons = polygons.ToList();
         }
 
@@ -621,12 +582,9 @@ namespace Lab6
         /// <param name="m"></param>
         public void Apply(Matrix m)
         {
-            foreach (Point3d point in points)
+            for (int i = 0; i < points.Count; i++)
             {
-                Point3d a = (Point3d)(point* m);
-                point.X = a.X;
-                point.Y = a.Y;
-                point.Z = a.Z;
+                points[i] = (Point3d)(points[i] * m);
             }
         }
 
@@ -636,7 +594,7 @@ namespace Lab6
         /// <param name="g"></param>
         /// <param name="View"> Матрица камеры</param>
         /// <param name="Projection"> Матрица проекций</param>
-        public void draw(Graphics g, Matrix View, Matrix Projection, Func<Point3d, PointF> projectionFunc)
+        public void draw(Graphics g, Matrix View, Matrix Projection)
         {
             double RX = Math.PI * Rotation.X / 180, RY = Math.PI * Rotation.Y / 180, RZ = Math.PI * Rotation.Z / 180;
             Matrix WorldMatrix = new Matrix(4, 4,
@@ -644,7 +602,15 @@ namespace Lab6
                 (float)(Scale.Y * (Math.Sin(RX) * Math.Sin(RY) * Math.Cos(RZ) - Math.Cos(RX) * Math.Sin(RZ))), (float)(Scale.Y * (Math.Sin(RX) * Math.Sin(RY) * Math.Sin(RZ) + Math.Cos(RX) * Math.Cos(RZ))), (float)(Scale.Y * Math.Sin(RX) * Math.Cos(RY)), 0,
                 (float)(Scale.Z * (Math.Cos(RX) * Math.Sin(RY) * Math.Cos(RZ) + Math.Sin(RX) * Math.Sin(RZ))), (float)(Scale.Z * (Math.Cos(RX) * Math.Sin(RY) * Math.Sin(RZ) - Math.Sin(RX) * Math.Cos(RZ))), (float)(Scale.Z * Math.Cos(RX) * Math.Cos(RY)), 0,
                 Position.X, Position.Y, Position.Z, 1);
-            foreach (var polygon in polygons) { polygon.draw(g, WorldMatrix, View, Projection, projectionFunc); }
+            foreach (var polygon in polygons) {
+                Point3d oldpnt = (Point3d)(points[polygon.points.Last()] * WorldMatrix * View * Projection);
+                for (int i = 0; i < polygon.points.Count; i++)
+                {
+                    Point3d pnt = (Point3d)(points[polygon.points[i]] * WorldMatrix * View * Projection);
+                    g.DrawLine(polygon.pen, oldpnt.X,oldpnt.Y, pnt.X, pnt.Y);
+                    oldpnt = pnt;
+                }
+            }
         }
         //use index for referencing points
         //mirror for in-world plane
@@ -663,7 +629,7 @@ namespace Lab6
             Point3d point2 = new Point3d(n, n, -n);
             Point3d point3 = new Point3d(-n, n, n);
             Point3d point4 = new Point3d(n, -n, n);
-            return new PolyHedron(new Point3d(X,Y,Z), new Polygon(point1,point3,point4),new Polygon(point2,point3,point4),new Polygon(point1,point2,point3),new Polygon(point1,point2,point4));
+            return new PolyHedron(new Point3d(X,Y,Z), new Point3d[]{point1,point2,point3,point4 }, new Polygon(0, 2, 3), new Polygon(1, 2, 3), new Polygon(0, 1, 2), new Polygon(0, 1, 3));
         }
         /// <summary>
         /// Гексаэдр
@@ -683,7 +649,7 @@ namespace Lab6
             Point3d point6 = new Point3d(n, n, -n);
             Point3d point7 = new Point3d(-n, n, -n);
             Point3d point8 = new Point3d(-n, -n, -n);
-            return new PolyHedron(new Point3d(X, Y, Z), new Polygon(point1, point2, point3, point4), new Polygon(point3, point4, point5, point6), new Polygon(point5, point6, point7, point8), new Polygon(point7, point8, point1, point2), new Polygon(point1, point4, point5, point8), new Polygon(point2, point3, point6, point7));
+            return new PolyHedron(new Point3d(X, Y, Z), new Point3d[] { point1, point2, point3, point4, point5, point6, point7, point8 }, new Polygon(0, 1, 2, 3), new Polygon(2, 3, 4, 5), new Polygon(4, 5, 6, 7), new Polygon(6, 7, 0, 1), new Polygon(0, 3, 4, 7), new Polygon(1, 2, 5, 6));
         }
         /// <summary>
         /// Октаэдр
@@ -702,7 +668,7 @@ namespace Lab6
             Point3d point4 = new Point3d(0, -lenmult * n, 0);
             Point3d point5 = new Point3d(0, 0, lenmult * n);
             Point3d point6 = new Point3d(0, 0, -lenmult * n);
-            return new PolyHedron(new Point3d(X, Y, Z), new Polygon(point1, point3, point5), new Polygon(point1, point3, point6), new Polygon(point1, point4, point5), new Polygon(point1, point4, point6), new Polygon(point2, point3, point5), new Polygon(point2, point3, point6), new Polygon(point2, point4, point5), new Polygon(point2, point4, point6));
+            return new PolyHedron(new Point3d(X, Y, Z), new Point3d[] { point1, point2, point3, point4, point5, point6}, new Polygon(0, 2, 4), new Polygon(0, 2, 5), new Polygon(0, 3, 4), new Polygon(0, 3, 5), new Polygon(1, 2, 4), new Polygon(1, 2, 5), new Polygon(1, 3, 4), new Polygon(1, 3, 5));
         }
         /// <summary>
         /// Икосаэдр
@@ -728,17 +694,18 @@ namespace Lab6
             Point3d point11 = new Point3d(GR * n, 0, -n);
             Point3d point12 = new Point3d(-GR * n, 0, -n);
             return new PolyHedron(new Point3d(X, Y, Z), 
-                new Polygon(point1, point3, point9), new Polygon(point1, point3, point10), 
-                new Polygon(point2, point4, point11), new Polygon(point2, point4, point12),
-                new Polygon(point5, point7, point1), new Polygon(point5, point7, point2), 
-                new Polygon(point6, point8, point3), new Polygon(point6, point8, point4),
-                new Polygon(point9, point11, point5), new Polygon(point9, point11, point6),
-                new Polygon(point10, point12, point7), new Polygon(point10, point12, point8),
+                new Point3d[] { point1, point2, point3, point4, point5, point6, point7, point8, point9, point10, point11, point12 },
+                new Polygon(0, 2, 8), new Polygon(0, 2, 9), 
+                new Polygon(1, 3, 10), new Polygon(1, 3, 11),
+                new Polygon(4, 6, 0), new Polygon(4, 6, 1), 
+                new Polygon(5, 7, 2), new Polygon(5, 7, 3),
+                new Polygon(8, 10, 4), new Polygon(8, 10, 5),
+                new Polygon(9, 11, 6), new Polygon(9, 11, 7),
 
-                new Polygon(point1, point9, point5), new Polygon(point1, point10, point7),
-                new Polygon(point3, point9, point6), new Polygon(point3, point10, point8),
-                new Polygon(point2, point11, point5), new Polygon(point2, point12, point7),
-                new Polygon(point4, point11, point6), new Polygon(point4, point12, point8)
+                new Polygon(0, 8, 4), new Polygon(0, 9, 6),
+                new Polygon(2, 8, 5), new Polygon(2, 9, 7),
+                new Polygon(1, 10, 4), new Polygon(1, 11, 6),
+                new Polygon(3, 10, 5), new Polygon(3, 11, 7)
                 );
         }
         /// <summary>
@@ -775,18 +742,19 @@ namespace Lab6
             Point3d point19 = new Point3d((GR + 1) * N, -(GR + 1) * N, -(GR + 1) * N);
             Point3d point20 = new Point3d(-(GR + 1) * N, -(GR + 1) * N, -(GR + 1) * N);
             return new PolyHedron(new Point3d(X, Y, Z),
-                new Polygon(point13, point1, point2, point14,point5),
-                new Polygon(point13, point1, point15, point10, point9),
-                new Polygon(point1, point15, point7, point16, point2),
-                new Polygon(point2,point16, point12, point11, point14),
-                new Polygon(point15, point7, point8, point19, point10),
-                new Polygon(point13, point5, point6, point17, point9),
-                new Polygon(point14, point5, point6, point18, point11),
-                new Polygon(point10, point9, point17,point3, point19),
-                new Polygon(point7, point16, point12, point20, point8),
-                new Polygon(point4,point20, point12, point11, point18),
-                new Polygon(point4, point20, point8, point19, point3),
-                new Polygon(point4,point3, point17, point6,  point18)
+                new Point3d[] { point1, point2, point3, point4, point5, point6, point7, point8, point9, point10, point11, point12, point13, point14, point15, point16, point17, point18, point19, point20 },
+                new Polygon(12, 0, 1, 13,4),
+                new Polygon(12, 0, 14, 9, 8),
+                new Polygon(0, 14, 6, 15, 1),
+                new Polygon(1,15, 11, 10, 13),
+                new Polygon(14, 6, 7, 18, 9),
+                new Polygon(12, 4, 5, 16, 8),
+                new Polygon(13, 4, 5, 17, 10),
+                new Polygon(9, 8, 16,2, 18),
+                new Polygon(6, 15, 11, 19, 7),
+                new Polygon(3,19, 11, 10, 17),
+                new Polygon(3, 19, 7, 18, 2),
+                new Polygon(3,2, 16, 5,  17)
                 );
         }
     }
