@@ -103,6 +103,7 @@
             this.MirrorPolySelector = new System.Windows.Forms.ComboBox();
             this.MirrorAxisSelector = new System.Windows.Forms.ComboBox();
             this.MirrorPlaneBox = new System.Windows.Forms.TextBox();
+            this.openModel = new System.Windows.Forms.OpenFileDialog();
             this.SpawnPanel.SuspendLayout();
             this.RotatePanel.SuspendLayout();
             this.PerspectivePanel.SuspendLayout();
@@ -207,7 +208,8 @@
             "Гексаэдр",
             "Октаэдр",
             "Икосаэдр",
-            "Додекаэдр"});
+            "Додекаэдр",
+            "Загрузить"});
             this.SpawnSelector.Location = new System.Drawing.Point(0, 0);
             this.SpawnSelector.Name = "SpawnSelector";
             this.SpawnSelector.Size = new System.Drawing.Size(121, 21);
@@ -890,18 +892,22 @@
             this.MirrorPlaneBox.Size = new System.Drawing.Size(113, 20);
             this.MirrorPlaneBox.TabIndex = 17;
             // 
+            // openModel
+            // 
+            this.openModel.FileName = "openFileDialog1";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.SpawnPanel);
             this.Controls.Add(this.MirrorPanel);
             this.Controls.Add(this.RotatePanel);
             this.Controls.Add(this.PerspectivePanel);
             this.Controls.Add(this.EditPanel);
             this.Controls.Add(this.TransformPanel);
             this.Controls.Add(this.DespawnPanel);
-            this.Controls.Add(this.SpawnPanel);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.Selector);
             this.Name = "Form1";
@@ -1002,6 +1008,7 @@
         private System.Windows.Forms.Label RotateDeg;
         private System.Windows.Forms.TextBox RotateDegBox;
         private System.Windows.Forms.TextBox MirrorPlaneBox;
+        private System.Windows.Forms.OpenFileDialog openModel;
     }
 }
 

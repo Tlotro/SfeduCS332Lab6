@@ -5,9 +5,11 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -39,7 +41,7 @@ namespace Lab6
             this.UpdateStyles();
             //Animate
             System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-            timer.Interval = (500);
+            timer.Interval = (50);
             timer.Tick += new EventHandler(timer_Tick);
             timer.Start();
         }
@@ -165,7 +167,7 @@ namespace Lab6
         private void SpawnButton_Click(object sender, EventArgs e)
         {
             float X, Y, Z, R;
-            if (float.TryParse(SpawnXBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out X) && float.TryParse(SpawnYBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Y) && float.TryParse(SpawnZBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Z) && float.TryParse(SpawnSizeBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out R))
+            if (SpawnSelector.SelectedIndex < 5 && float.TryParse(SpawnXBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out X) && float.TryParse(SpawnYBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Y) && float.TryParse(SpawnZBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Z) && float.TryParse(SpawnSizeBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out R))
                 switch (SpawnSelector.SelectedIndex)
                 {
                     /*Тетраэдр
@@ -189,6 +191,13 @@ namespace Lab6
                         polyHedrons.Add(PolyHedron.Dodecahedron(X, Y, Z, R));
                         break;
                 }
+            if (SpawnSelector.SelectedIndex == 5 && float.TryParse(SpawnXBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out X) && float.TryParse(SpawnYBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Y) && float.TryParse(SpawnZBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Z))
+            {
+                openModel.ShowDialog();
+                string filepath = openModel.FileName;
+                if (filepath != null)
+                    polyHedrons.Add(new PolyHedron(filepath, new Point3d(X,Y,Z),new Point3d(0,0,0),new Point3d(1,1,1)));
+            }
             draw();
         }
         private void Spawn_TextChanged(object sender, EventArgs e)
@@ -546,6 +555,58 @@ namespace Lab6
             Rotation = new Point3d();
             Scale = new Point3d(1,1,1);
             polygons = new List<Polygon>();
+            points = new List<Point3d>();
+        }
+        public PolyHedron(string filePath, Point3d position, Point3d rotation, Point3d scale)
+        {
+            Position = position;
+            Rotation = rotation;
+            Scale = scale;
+            points = new List<Point3d>();
+            polygons = new List<Polygon>();
+            using (FileStream fstream = File.OpenRead(filePath))
+            {
+                using (StreamReader reader = new StreamReader(fstream))
+                {
+                    String line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        line = Regex.Replace(line, "\\s+", " ").Trim();
+                        if (line.Length > 0 && line[0] != '#')
+                        {
+                            string[] split = line.Split(' ');
+                            switch (split[0].ToLower())
+                            {
+                                case "v":
+                                    float x,y,z;
+                                    x = float.Parse(split[1], NumberStyles.Any, CultureInfo.InvariantCulture);
+                                    y = float.Parse(split[2], NumberStyles.Any, CultureInfo.InvariantCulture);
+                                    z = float.Parse(split[3], NumberStyles.Any, CultureInfo.InvariantCulture);
+                                    points.Add(new Point3d(x, y, z));
+                                    break;
+                                case "vt":
+                                    //TODO ADD TEXTURES
+                                    break;
+                                case "vn":
+                                    //TODO ADD NORMALS
+                                    break;
+                                case "vp":
+                                    //TODO ADD PARAMETER VERTICIES
+                                    break;
+                                case "f":
+                                    Polygon polygon = new Polygon();
+                                    for (int i = 1; i < split.Length; i++)
+                                    {
+                                        string[] split2 = split[i].Split('/');
+                                        polygon.points.Add(int.Parse(split2[0])-1);
+                                    }
+                                    polygons.Add(polygon);
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
         }
         public PolyHedron(Point3d[] points, params Polygon[] polygons)
         {
@@ -571,7 +632,6 @@ namespace Lab6
             this.points = points.ToList();
             this.polygons = polygons.ToList();
         }
-
         public void Add(Polygon polygon)
         {
             polygons.Add(polygon);
