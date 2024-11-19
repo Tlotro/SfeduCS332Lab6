@@ -104,6 +104,10 @@
             this.MirrorAxisSelector = new System.Windows.Forms.ComboBox();
             this.MirrorPlaneBox = new System.Windows.Forms.TextBox();
             this.openModel = new System.Windows.Forms.OpenFileDialog();
+            this.saveModel = new System.Windows.Forms.SaveFileDialog();
+            this.SavePanel = new System.Windows.Forms.Panel();
+            this.SaveButton = new System.Windows.Forms.Button();
+            this.SaveBox = new System.Windows.Forms.ComboBox();
             this.SpawnPanel.SuspendLayout();
             this.RotatePanel.SuspendLayout();
             this.PerspectivePanel.SuspendLayout();
@@ -111,6 +115,7 @@
             this.TransformPanel.SuspendLayout();
             this.EditPanel.SuspendLayout();
             this.MirrorPanel.SuspendLayout();
+            this.SavePanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // Selector
@@ -125,6 +130,7 @@
             "Отразить",
             "Поворот вокруг прямой",
             "Изменить проекцию",
+            "Сохранить",
             "Удалить"});
             this.Selector.Location = new System.Drawing.Point(667, 12);
             this.Selector.Name = "Selector";
@@ -896,12 +902,46 @@
             // 
             this.openModel.FileName = "openFileDialog1";
             // 
+            // SavePanel
+            // 
+            this.SavePanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.SavePanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.SavePanel.Controls.Add(this.SaveButton);
+            this.SavePanel.Controls.Add(this.SaveBox);
+            this.SavePanel.Location = new System.Drawing.Point(667, 39);
+            this.SavePanel.Name = "SavePanel";
+            this.SavePanel.Size = new System.Drawing.Size(121, 399);
+            this.SavePanel.TabIndex = 20;
+            this.SavePanel.Visible = false;
+            // 
+            // SaveButton
+            // 
+            this.SaveButton.Location = new System.Drawing.Point(41, 24);
+            this.SaveButton.Name = "SaveButton";
+            this.SaveButton.Size = new System.Drawing.Size(75, 23);
+            this.SaveButton.TabIndex = 15;
+            this.SaveButton.Text = "Сохранить";
+            this.SaveButton.UseVisualStyleBackColor = true;
+            this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
+            // 
+            // SaveBox
+            // 
+            this.SaveBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.SaveBox.FormattingEnabled = true;
+            this.SaveBox.Location = new System.Drawing.Point(-1, -1);
+            this.SaveBox.Name = "SaveBox";
+            this.SaveBox.Size = new System.Drawing.Size(121, 21);
+            this.SaveBox.TabIndex = 0;
+            this.SaveBox.SelectedIndexChanged += new System.EventHandler(this.SaveBox_SelectedIndexChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.SpawnPanel);
+            this.Controls.Add(this.SavePanel);
             this.Controls.Add(this.MirrorPanel);
             this.Controls.Add(this.RotatePanel);
             this.Controls.Add(this.PerspectivePanel);
@@ -927,6 +967,7 @@
             this.EditPanel.PerformLayout();
             this.MirrorPanel.ResumeLayout(false);
             this.MirrorPanel.PerformLayout();
+            this.SavePanel.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -1009,6 +1050,10 @@
         private System.Windows.Forms.TextBox RotateDegBox;
         private System.Windows.Forms.TextBox MirrorPlaneBox;
         private System.Windows.Forms.OpenFileDialog openModel;
+        private System.Windows.Forms.SaveFileDialog saveModel;
+        private System.Windows.Forms.Panel SavePanel;
+        private System.Windows.Forms.Button SaveButton;
+        private System.Windows.Forms.ComboBox SaveBox;
     }
 }
 

@@ -24,8 +24,8 @@ namespace Lab6
         Matrix ViewMatrix => new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1); 
         Matrix ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         List<PolyHedron> polyHedrons = new List<PolyHedron>();
-        List<Point3d> ExtraPoints = new List<Point3d>();
-        List<KeyValuePair<Point3d,Point3d>> ExtraLines = new List<KeyValuePair<Point3d, Point3d>>();
+        Dictionary<string,Point3d> ExtraPoints = new Dictionary<string, Point3d>();
+        Dictionary<string, KeyValuePair<Point3d,Point3d>> ExtraLines = new Dictionary<string, KeyValuePair<Point3d, Point3d>>();
         public Form1()
         {
             InitializeComponent();
@@ -34,6 +34,24 @@ namespace Lab6
             polyHedrons.Add(PolyHedron.Octahedron(300, 100, 0, 10));
             polyHedrons.Add(PolyHedron.Icosahedron(400, 100, 0, 10));
             polyHedrons.Add(PolyHedron.Dodecahedron(500, 100, 0, 10));
+            polyHedrons.Add(PolyHedron.Tetrahedron(-100, 100, 0, 10));
+            polyHedrons.Add(PolyHedron.Hexahedron(-200, 100, 0, 10));
+            polyHedrons.Add(PolyHedron.Octahedron(-300, 100, 0, 10));
+            polyHedrons.Add(PolyHedron.Icosahedron(-400, 100, 0, 10));
+            polyHedrons.Add(PolyHedron.Dodecahedron(-500, 100, 0, 10));
+            polyHedrons.Add(PolyHedron.Tetrahedron(100, -100, 0, 10));
+            polyHedrons.Add(PolyHedron.Hexahedron(200, -100, 0, 10));
+            polyHedrons.Add(PolyHedron.Octahedron(300, -100, 0, 10));
+            polyHedrons.Add(PolyHedron.Icosahedron(400, -100, 0, 10));
+            polyHedrons.Add(PolyHedron.Dodecahedron(500, -100, 0, 10));
+            polyHedrons.Add(PolyHedron.Tetrahedron(-100, -100, 0, 10));
+            polyHedrons.Add(PolyHedron.Hexahedron(-200, -100, 0, 10));
+            polyHedrons.Add(PolyHedron.Octahedron(-300, -100, 0, 10));
+            polyHedrons.Add(PolyHedron.Icosahedron(-400, -100, 0, 10));
+            polyHedrons.Add(PolyHedron.Dodecahedron(-500, -100, 0, 10));
+            ExtraLines.Add("X", new KeyValuePair<Point3d, Point3d>(new Point3d(0,0,0),new Point3d(50,0,0)));
+            ExtraLines.Add("Y", new KeyValuePair<Point3d, Point3d>(new Point3d(0,0,0), new Point3d(0,50,0)));
+            ExtraLines.Add("Z", new KeyValuePair<Point3d, Point3d>(new Point3d(0,0,0), new Point3d(0,0,50)));
             this.SetStyle(ControlStyles.DoubleBuffer |
             ControlStyles.UserPaint |
             ControlStyles.AllPaintingInWmPaint,
@@ -77,25 +95,25 @@ namespace Lab6
             //This matrix is reversed when it comes to position and rotation. When you move the camera, everything else moves in reverse
             foreach (PolyHedron poly in polyHedrons) 
             {
-                poly.draw(myBuffer.Graphics,ViewMatrix,ProjectionMatrix);
+                poly.draw(myBuffer.Graphics, new PointF(panel1.Size.Width,panel1.Size.Height),ViewMatrix,ProjectionMatrix);
             }
             foreach (var point in ExtraPoints)
-                drawPoint(myBuffer.Graphics, Color.Green, point);
+                drawPoint(myBuffer.Graphics, new PointF(panel1.Size.Width, panel1.Size.Height), Color.Green, point.Value);
             foreach (var line in ExtraLines)
-                drawLine(myBuffer.Graphics, Color.Green, line.Key, line.Value);
+                drawLine(myBuffer.Graphics, new PointF(panel1.Size.Width, panel1.Size.Height), Color.Green, line.Value.Key, line.Value.Value);
             myBuffer.Render(); 
             myBuffer.Dispose();
         }
-        public void drawPoint(Graphics g, Color color, Point3d point1)
+        public void drawPoint(Graphics g, PointF viewport, Color color, Point3d point1)
         {
             PointF p1 = (Point3d)(point1 * ViewMatrix * ProjectionMatrix);
-            g.FillEllipse(new Pen(color).Brush, p1.X-3, p1.Y-3, 7,7);
+            g.FillEllipse(new Pen(color).Brush, p1.X-3 + viewport.X / 2, p1.Y-3 + viewport.Y / 2, 7,7);
         }
-        public void drawLine(Graphics g, Color color, Point3d point1, Point3d point2)
+        public void drawLine(Graphics g, PointF viewport, Color color, Point3d point1, Point3d point2)
         {
             PointF p1 = (Point3d)(point1 * ViewMatrix * ProjectionMatrix);
             PointF p2 = (Point3d)(point2 * ViewMatrix * ProjectionMatrix);
-            g.DrawLine(new Pen(color), p1.X, p1.Y, p2.X, p2.Y);
+            g.DrawLine(new Pen(color), p1.X + viewport.X / 2, p1.Y + viewport.Y / 2, p2.X + viewport.X / 2, p2.Y + viewport.Y / 2);
         }
 
         private void Form1_Shown(object sender, EventArgs e)
@@ -110,8 +128,8 @@ namespace Lab6
         
         private void Selector_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ExtraLines.Clear();
-            ExtraPoints.Clear();
+            ExtraPoints.Remove("PHDSelector");
+            ExtraLines.Remove("RotationAxis");
             //У каждого задания своя панель. СМ вид->другие окна->структура документа
             SpawnPanel.Visible = false;
             TransformPanel.Visible = false;
@@ -120,6 +138,7 @@ namespace Lab6
             RotatePanel.Visible = false; 
             PerspectivePanel.Visible = false;
             DespawnPanel.Visible = false;
+            SavePanel.Visible = false;
             draw();
             switch (Selector.SelectedIndex) 
             {
@@ -156,6 +175,12 @@ namespace Lab6
                         MirrorPolySelector.Items.Add($"{p.Position.X} {p.Position.Y} {p.Position.Z}");
                     break;
                 case 6:
+                    SavePanel.Visible = true; 
+                    SaveBox.Items.Clear();
+                    foreach (PolyHedron p in polyHedrons)
+                        SaveBox.Items.Add($"{p.Position.X} {p.Position.Y} {p.Position.Z}");
+                    break;
+                case 7:
                     DespawnPanel.Visible = true;
                     DespawnSelector.Items.Clear();
                     foreach (PolyHedron p in polyHedrons)
@@ -193,20 +218,21 @@ namespace Lab6
                 }
             if (SpawnSelector.SelectedIndex == 5 && float.TryParse(SpawnXBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out X) && float.TryParse(SpawnYBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Y) && float.TryParse(SpawnZBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Z))
             {
-                openModel.ShowDialog();
-                string filepath = openModel.FileName;
-                if (filepath != null)
-                    polyHedrons.Add(new PolyHedron(filepath, new Point3d(X,Y,Z),new Point3d(0,0,0),new Point3d(1,1,1)));
+                if (openModel.ShowDialog() == DialogResult.OK)
+                {
+                    string filepath = openModel.FileName;
+                    if (filepath != null)
+                        polyHedrons.Add(new PolyHedron(filepath, new Point3d(X, Y, Z), new Point3d(0, 0, 0), new Point3d(1, 1, 1)));
+                }
             }
             draw();
         }
         private void Spawn_TextChanged(object sender, EventArgs e)
         {
-            ExtraPoints.Clear();
             float X, Y, Z;
             if (float.TryParse(SpawnXBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out X) && float.TryParse(SpawnYBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Y) && float.TryParse(SpawnZBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out Z))
             {
-                ExtraPoints.Add(new Point3d(X, Y, Z));
+                ExtraPoints["PHDSelector"] = new Point3d(X, Y, Z);
             }
             draw();
         }
@@ -215,9 +241,8 @@ namespace Lab6
         private void TransformSelector_SelectedIndexChanged(object sender, EventArgs e)
         {
             textchanging = false;
-                ExtraPoints.Clear();
                 PolyHedron P = polyHedrons[TransformSelector.SelectedIndex];
-                ExtraPoints.Add(new Point3d(P.Position.X, P.Position.Y, P.Position.Z));
+                ExtraPoints["PHDSelector"] = new Point3d(P.Position.X, P.Position.Y, P.Position.Z);
                 PositionX.Text = P.Position.X.ToString();
                 PositionY.Text = P.Position.Y.ToString();
                 PositionZ.Text = P.Position.Z.ToString();
@@ -235,7 +260,6 @@ namespace Lab6
             if (textchanging)
             {
                 PolyHedron P = polyHedrons[TransformSelector.SelectedIndex];
-                ExtraPoints.Clear();
                 float.TryParse(PositionX.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Position.X);
                 float.TryParse(PositionY.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Position.Y);
                 float.TryParse(PositionZ.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Position.Z);
@@ -245,7 +269,7 @@ namespace Lab6
                 float.TryParse(ScaleX.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Scale.X);
                 float.TryParse(ScaleY.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Scale.Y);
                 float.TryParse(ScaleZ.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out P.Scale.Z);
-                ExtraPoints.Add(new Point3d(P.Position.X, P.Position.Y, P.Position.Z));
+                ExtraPoints["PHDSelector"] = new Point3d(P.Position.X, P.Position.Y, P.Position.Z);
                 int index = TransformSelector.SelectedIndex;
                 TransformSelector.Items.RemoveAt(index);
                 TransformSelector.Items.Insert(index, $"{P.Position.X} {P.Position.Y} {P.Position.Z}");
@@ -258,9 +282,8 @@ namespace Lab6
 
         private void EditPolySelector_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ExtraPoints.Clear();
             PolyHedron P = polyHedrons[EditPolySelector.SelectedIndex];
-            ExtraPoints.Add(new Point3d(P.Position.X, P.Position.Y, P.Position.Z));
+            ExtraPoints["PHDSelector"] = new Point3d(P.Position.X, P.Position.Y, P.Position.Z);
             draw();
         }
         private void EditButton_Click(object sender, EventArgs e)
@@ -294,18 +317,16 @@ namespace Lab6
 
         private void MirrorPolySelector_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ExtraPoints.Clear();
             PolyHedron P = polyHedrons[MirrorPolySelector.SelectedIndex];
-            ExtraPoints.Add(new Point3d(P.Position.X, P.Position.Y, P.Position.Z));
+            ExtraPoints["PHDSelector"] = new Point3d(P.Position.X, P.Position.Y, P.Position.Z);
             draw();
         }
 
         //Поворот ------------------------------------------------------------------------------------------------------------------------------------------------------------------
         private void RotateSelectDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ExtraPoints.Clear();
             PolyHedron P = polyHedrons[RotateSelectDropdown.SelectedIndex];
-            ExtraPoints.Add(new Point3d(P.Position.X, P.Position.Y, P.Position.Z));
+            ExtraPoints["PHDSelector"] = new Point3d(P.Position.X, P.Position.Y, P.Position.Z);
             draw();
         }
         private void RotateButton_Click(object sender, EventArgs e)
@@ -353,9 +374,8 @@ namespace Lab6
         //Удаление -----------------------------------------------------------------------------------------------------------------------------------------------------------------
         private void DespawnSelector_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ExtraPoints.Clear();
             PolyHedron P = polyHedrons[DespawnSelector.SelectedIndex];
-            ExtraPoints.Add(new Point3d(P.Position.X, P.Position.Y, P.Position.Z));
+            ExtraPoints["PHDSelector"] = new Point3d(P.Position.X, P.Position.Y, P.Position.Z);
             draw();
         }
 
@@ -401,7 +421,7 @@ namespace Lab6
                     break;
                 case 1:
                     //Change This
-                    ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                    ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, -1f / 200, 0, 0, 0, 1);
                     break;
             }
             draw();
@@ -409,7 +429,6 @@ namespace Lab6
 
         private void RotatePoint_TextChanged(object sender, EventArgs e)
         {
-            ExtraLines.Clear();
             Point3d a = new Point3d();
             Point3d b = new Point3d();
             if(
@@ -420,7 +439,23 @@ namespace Lab6
             float.TryParse(RotatePoint2YBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out b.Y) &&
             float.TryParse(RotatePoint2ZBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out b.Z)
             )
-            ExtraLines.Add(new KeyValuePair<Point3d, Point3d>(a, b));
+            ExtraLines["RotationAxis"] = new KeyValuePair<Point3d, Point3d>(a, b);
+            draw();
+        }
+
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            if (SaveBox.SelectedIndex != -1 && saveModel.ShowDialog() == DialogResult.OK)
+            {
+                string fname = saveModel.FileName;
+                polyHedrons[SaveBox.SelectedIndex].Save(fname);
+            }    
+        }
+
+        private void SaveBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            PolyHedron P = polyHedrons[SaveBox.SelectedIndex];
+            ExtraPoints["PHDSelector"] = new Point3d(P.Position.X, P.Position.Y, P.Position.Z);
             draw();
         }
     }
@@ -548,7 +583,9 @@ namespace Lab6
         public Point3d Rotation;
         public Point3d Scale;
         public List<Polygon> polygons;
+        public List<Point3d> normals;
         public List<Point3d> points;
+        public List<Point3d> verticenormals;
         public PolyHedron() 
         {
             Position = new Point3d();
@@ -563,6 +600,7 @@ namespace Lab6
             Rotation = rotation;
             Scale = scale;
             points = new List<Point3d>();
+            verticenormals = new List<Point3d>();
             polygons = new List<Polygon>();
             using (FileStream fstream = File.OpenRead(filePath))
             {
@@ -575,10 +613,10 @@ namespace Lab6
                         if (line.Length > 0 && line[0] != '#')
                         {
                             string[] split = line.Split(' ');
+                            float x, y, z;
                             switch (split[0].ToLower())
                             {
                                 case "v":
-                                    float x,y,z;
                                     x = float.Parse(split[1], NumberStyles.Any, CultureInfo.InvariantCulture);
                                     y = float.Parse(split[2], NumberStyles.Any, CultureInfo.InvariantCulture);
                                     z = float.Parse(split[3], NumberStyles.Any, CultureInfo.InvariantCulture);
@@ -588,7 +626,10 @@ namespace Lab6
                                     //TODO ADD TEXTURES
                                     break;
                                 case "vn":
-                                    //TODO ADD NORMALS
+                                    x = float.Parse(split[1], NumberStyles.Any, CultureInfo.InvariantCulture);
+                                    y = float.Parse(split[2], NumberStyles.Any, CultureInfo.InvariantCulture);
+                                    z = float.Parse(split[3], NumberStyles.Any, CultureInfo.InvariantCulture);
+                                    verticenormals.Add(new Point3d(x, y, z));
                                     break;
                                 case "vp":
                                     //TODO ADD PARAMETER VERTICIES
@@ -647,14 +688,34 @@ namespace Lab6
                 points[i] = (Point3d)(points[i] * m);
             }
         }
+        public void Save(string filePath)
+        {
+            using (FileStream fstream = File.OpenWrite(filePath))
+            {
+                using (StreamWriter writer = new StreamWriter(fstream))
+                {
+                    foreach (Point3d point in this.points)
+                    {
+                        writer.WriteLine($"v {point.X} {point.Y} {point.Z}");
+                    }
 
+                    foreach (Polygon poly in this.polygons)
+                    {
+                        StringBuilder builder = new StringBuilder();
+                        foreach (int point in poly.points)
+                            builder.Append($" {point+1}");
+                        writer.WriteLine($"f{builder.ToString()}");
+                    }    
+                }
+            }
+        }
         /// <summary>
         /// Вывод
         /// </summary>
         /// <param name="g"></param>
         /// <param name="View"> Матрица камеры</param>
         /// <param name="Projection"> Матрица проекций</param>
-        public void draw(Graphics g, Matrix View, Matrix Projection)
+        public void draw(Graphics g, PointF viewport, Matrix View, Matrix Projection)
         {
             double RX = Math.PI * Rotation.X / 180, RY = Math.PI * Rotation.Y / 180, RZ = Math.PI * Rotation.Z / 180;
             Matrix WorldMatrix = new Matrix(4, 4,
@@ -663,11 +724,11 @@ namespace Lab6
                 (float)(Scale.Z * (Math.Cos(RX) * Math.Sin(RY) * Math.Cos(RZ) + Math.Sin(RX) * Math.Sin(RZ))), (float)(Scale.Z * (Math.Cos(RX) * Math.Sin(RY) * Math.Sin(RZ) - Math.Sin(RX) * Math.Cos(RZ))), (float)(Scale.Z * Math.Cos(RX) * Math.Cos(RY)), 0,
                 Position.X, Position.Y, Position.Z, 1);
             foreach (var polygon in polygons) {
-                Point3d oldpnt = (Point3d)(points[polygon.points.Last()] * WorldMatrix * View * Projection);
+                Matrix oldpnt = (points[polygon.points.Last()] * WorldMatrix * View * Projection);
                 for (int i = 0; i < polygon.points.Count; i++)
                 {
-                    Point3d pnt = (Point3d)(points[polygon.points[i]] * WorldMatrix * View * Projection);
-                    g.DrawLine(polygon.pen, oldpnt.X,oldpnt.Y, pnt.X, pnt.Y);
+                    Matrix pnt = (points[polygon.points[i]] * WorldMatrix * View * Projection);
+                    g.DrawLine(polygon.pen, oldpnt[0, 0] * oldpnt[3,0] + viewport.X/2, oldpnt[1, 0] * oldpnt[3, 0] + viewport.Y/2, pnt[0, 0] * pnt[3, 0] + viewport.X/2, pnt[1, 0] * pnt[3, 0]+ viewport.Y/2);
                     oldpnt = pnt;
                 }
             }
