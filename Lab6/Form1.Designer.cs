@@ -108,6 +108,12 @@
             this.SavePanel = new System.Windows.Forms.Panel();
             this.SaveButton = new System.Windows.Forms.Button();
             this.SaveBox = new System.Windows.Forms.ComboBox();
+            this.LatheSelectorBox = new System.Windows.Forms.ComboBox();
+            this.LatheDivisionsBox = new System.Windows.Forms.TextBox();
+            this.LatheDivisionsLabel = new System.Windows.Forms.Label();
+            this.LatheButton = new System.Windows.Forms.Button();
+            this.LatheAxisBox = new System.Windows.Forms.ComboBox();
+            this.LathePanel = new System.Windows.Forms.Panel();
             this.SpawnPanel.SuspendLayout();
             this.RotatePanel.SuspendLayout();
             this.PerspectivePanel.SuspendLayout();
@@ -116,6 +122,7 @@
             this.EditPanel.SuspendLayout();
             this.MirrorPanel.SuspendLayout();
             this.SavePanel.SuspendLayout();
+            this.LathePanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // Selector
@@ -131,6 +138,7 @@
             "Поворот вокруг прямой",
             "Изменить проекцию",
             "Сохранить",
+            "Выточить",
             "Удалить"});
             this.Selector.Location = new System.Drawing.Point(667, 12);
             this.Selector.Name = "Selector";
@@ -935,11 +943,77 @@
             this.SaveBox.TabIndex = 0;
             this.SaveBox.SelectedIndexChanged += new System.EventHandler(this.SaveBox_SelectedIndexChanged);
             // 
+            // LatheSelectorBox
+            // 
+            this.LatheSelectorBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.LatheSelectorBox.FormattingEnabled = true;
+            this.LatheSelectorBox.Location = new System.Drawing.Point(-1, 0);
+            this.LatheSelectorBox.Name = "LatheSelectorBox";
+            this.LatheSelectorBox.Size = new System.Drawing.Size(121, 21);
+            this.LatheSelectorBox.TabIndex = 0;
+            this.LatheSelectorBox.SelectedIndexChanged += new System.EventHandler(this.BevelSelectorBox_SelectedIndexChanged);
+            // 
+            // LatheDivisionsBox
+            // 
+            this.LatheDivisionsBox.Location = new System.Drawing.Point(19, 54);
+            this.LatheDivisionsBox.Name = "LatheDivisionsBox";
+            this.LatheDivisionsBox.Size = new System.Drawing.Size(96, 20);
+            this.LatheDivisionsBox.TabIndex = 16;
+            // 
+            // LatheDivisionsLabel
+            // 
+            this.LatheDivisionsLabel.AutoSize = true;
+            this.LatheDivisionsLabel.Location = new System.Drawing.Point(3, 57);
+            this.LatheDivisionsLabel.Name = "LatheDivisionsLabel";
+            this.LatheDivisionsLabel.Size = new System.Drawing.Size(15, 13);
+            this.LatheDivisionsLabel.TabIndex = 17;
+            this.LatheDivisionsLabel.Text = "D";
+            // 
+            // LatheButton
+            // 
+            this.LatheButton.Location = new System.Drawing.Point(40, 80);
+            this.LatheButton.Name = "LatheButton";
+            this.LatheButton.Size = new System.Drawing.Size(75, 23);
+            this.LatheButton.TabIndex = 15;
+            this.LatheButton.Text = "Повернуть";
+            this.LatheButton.UseVisualStyleBackColor = true;
+            this.LatheButton.Click += new System.EventHandler(this.LatheButton_Click);
+            // 
+            // LatheAxisBox
+            // 
+            this.LatheAxisBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.LatheAxisBox.FormattingEnabled = true;
+            this.LatheAxisBox.Items.AddRange(new object[] {
+            "X",
+            "Y",
+            "Z"});
+            this.LatheAxisBox.Location = new System.Drawing.Point(-1, 27);
+            this.LatheAxisBox.Name = "LatheAxisBox";
+            this.LatheAxisBox.Size = new System.Drawing.Size(121, 21);
+            this.LatheAxisBox.TabIndex = 18;
+            // 
+            // LathePanel
+            // 
+            this.LathePanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.LathePanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.LathePanel.Controls.Add(this.LatheAxisBox);
+            this.LathePanel.Controls.Add(this.LatheButton);
+            this.LathePanel.Controls.Add(this.LatheDivisionsLabel);
+            this.LathePanel.Controls.Add(this.LatheDivisionsBox);
+            this.LathePanel.Controls.Add(this.LatheSelectorBox);
+            this.LathePanel.Location = new System.Drawing.Point(667, 39);
+            this.LathePanel.Name = "LathePanel";
+            this.LathePanel.Size = new System.Drawing.Size(121, 399);
+            this.LathePanel.TabIndex = 21;
+            this.LathePanel.Visible = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.LathePanel);
             this.Controls.Add(this.SpawnPanel);
             this.Controls.Add(this.SavePanel);
             this.Controls.Add(this.MirrorPanel);
@@ -968,6 +1042,8 @@
             this.MirrorPanel.ResumeLayout(false);
             this.MirrorPanel.PerformLayout();
             this.SavePanel.ResumeLayout(false);
+            this.LathePanel.ResumeLayout(false);
+            this.LathePanel.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1054,6 +1130,12 @@
         private System.Windows.Forms.Panel SavePanel;
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.ComboBox SaveBox;
+        private System.Windows.Forms.ComboBox LatheSelectorBox;
+        private System.Windows.Forms.TextBox LatheDivisionsBox;
+        private System.Windows.Forms.Label LatheDivisionsLabel;
+        private System.Windows.Forms.Button LatheButton;
+        private System.Windows.Forms.ComboBox LatheAxisBox;
+        private System.Windows.Forms.Panel LathePanel;
     }
 }
 
