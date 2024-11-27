@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -17,18 +18,15 @@ namespace Lab6
 {
     public partial class Form1 : Form
     {
-        Point3d camPos = new Point3d(0,0,0);
-        Point3d camRot = new Point3d(0,0,0);
-        float camDist = 0;
+        Camera camera;
         bool textchanging = true;
-        //TODO: this is a function from camera state
-        Matrix ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         List<PolyHedron> polyHedrons = new List<PolyHedron>();
         Dictionary<string,Point3d> ExtraPoints = new Dictionary<string, Point3d>();
         Dictionary<string, KeyValuePair<Point3d,Point3d>> ExtraLines = new Dictionary<string, KeyValuePair<Point3d, Point3d>>();
         public Form1()
         {
             InitializeComponent();
+            camera = new Camera(new Point3d(0, 0, 0), new Point3d(45, 0, 0), 200, new PointF(panel1.Size.Width, panel1.Size.Height));
             polyHedrons.Add(PolyHedron.Tetrahedron(100, 0, 50,10));
             polyHedrons.Add(PolyHedron.Hexahedron(200, 0, 50,10));
             polyHedrons.Add(PolyHedron.Octahedron(300, 0, 50,10));
@@ -62,6 +60,7 @@ namespace Lab6
             ControlStyles.AllPaintingInWmPaint,
             true);
             this.UpdateStyles();
+            camera.update();
             //Animate
             System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
             timer.Interval = (50);
@@ -71,17 +70,20 @@ namespace Lab6
 
         private void timer_Tick(object sender, EventArgs e)
         {
+            camera.viewport = new PointF(panel1.Size.Width, panel1.Size.Height);
             foreach (var poly in polyHedrons)
             {
                 poly.Rotation.X += 5;
-                //poly.Rotation.Y += 5;
-                //poly.Rotation.Z += 5;
+                poly.Rotation.Y += 5;
+                poly.Rotation.Z += 5;
             }
-            camRot.Y += 1;
-            //camRot.Y += 1;
-            camDist += 1;
+            camera.camRot.Y += 1f;
+            camera.camDist += 0.5f;
+            camera.update();
             draw();
         }
+
+        
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
@@ -100,35 +102,27 @@ namespace Lab6
             currentContext = BufferedGraphicsManager.Current;
             myBuffer = currentContext.Allocate(panel1.CreateGraphics(),panel1.DisplayRectangle);
             myBuffer.Graphics.Clear(SystemColors.Control);
-            double RX = -Math.PI * camRot.X / 180, RY = -Math.PI * camRot.Y / 180;
-            //ПОМЕНЯЙ МЕСТАМИ ОСИ И УБЕРИ ВРАЩЕНИЕ ПО Z
-            Matrix ViewMatrix = new Matrix(4, 4,
-                (float)(Math.Cos(RY)), (float)(Math.Sin(RX)*Math.Sin(RY)), (float)(-Math.Cos(RX)*Math.Sin(RY)), 0,
-                0, (float)((Math.Cos(RX))), (float)(Math.Sin(RX)), 0,
-                (float)((Math.Sin(RY))), (float)((- Math.Sin(RX)*Math.Cos(RY))), (float)(Math.Cos(RX) * Math.Cos(RY)), 0,
-                (float)(-camPos.X * Math.Cos(RY) - camPos.Z * Math.Sin(RY)), (float)(- camPos.X*(Math.Sin(RX) * Math.Sin(RY)) - camPos.Y * (Math.Cos(RX)) - camPos.Z* (-Math.Sin(RX) * Math.Cos(RY))) , (float)(-camPos.X*(-Math.Cos(RX) * Math.Sin(RY)) -camPos.Y*(Math.Sin(RX)) -camPos.Z*(Math.Cos(RX) * Math.Cos(RY))) + camDist , 1);
-            //This matrix is reversed when it comes to position and rotation. When you move the camera, everything else moves in reverse
             foreach (PolyHedron poly in polyHedrons) 
             {
-                poly.draw(myBuffer.Graphics, new PointF(panel1.Size.Width,panel1.Size.Height),ViewMatrix,ProjectionMatrix);
+                poly.draw(myBuffer.Graphics, camera);
             }
             foreach (var point in ExtraPoints)
-                drawPoint(myBuffer.Graphics, new PointF(panel1.Size.Width, panel1.Size.Height), ViewMatrix, Color.Green, point.Value);
+                drawPoint(myBuffer.Graphics, camera, Color.Green, point.Value);
             foreach (var line in ExtraLines)
-                drawLine(myBuffer.Graphics, new PointF(panel1.Size.Width, panel1.Size.Height), ViewMatrix, Color.Green, line.Value.Key, line.Value.Value);
+                drawLine(myBuffer.Graphics, camera, Color.Green, line.Value.Key, line.Value.Value);
             myBuffer.Render(); 
             myBuffer.Dispose();
         }
-        public void drawPoint(Graphics g, PointF viewport, Matrix ViewMatrix, Color color, Point3d point1)
+        public void drawPoint(Graphics g, Camera camera, Color color, Point3d point1)
         {
-            PointF p1 = (Point3d)(point1 * ViewMatrix * ProjectionMatrix);
-            g.FillEllipse(new Pen(color).Brush, p1.X-3 + viewport.X / 2, p1.Y-3 + viewport.Y / 2, 7,7);
+            Point3d p1 = (Point3d)(point1 * camera.ViewMatrix * camera.ProjectionMatrix);
+            g.FillEllipse(new Pen(color).Brush, p1.X-3 + camera.viewport.X / 2, -p1.Y-3 + camera.viewport.Y / 2, 7,7);
         }
-        public void drawLine(Graphics g, PointF viewport, Matrix ViewMatrix, Color color, Point3d point1, Point3d point2)
+        public void drawLine(Graphics g, Camera camera, Color color, Point3d point1, Point3d point2)
         {
-            PointF p1 = (Point3d)(point1 * ViewMatrix * ProjectionMatrix);
-            PointF p2 = (Point3d)(point2 * ViewMatrix * ProjectionMatrix);
-            g.DrawLine(new Pen(color), p1.X + viewport.X / 2, p1.Y + viewport.Y / 2, p2.X + viewport.X / 2, p2.Y + viewport.Y / 2);
+            Point3d p1 = (Point3d)(point1 * camera.ViewMatrix * camera.ProjectionMatrix);
+            Point3d p2 = (Point3d)(point2 * camera.ViewMatrix * camera.ProjectionMatrix);
+            g.DrawLine(new Pen(color), p1.X + camera.viewport.X / 2, -p1.Y + camera.viewport.Y / 2, p2.X + camera.viewport.X / 2, -p2.Y + camera.viewport.Y / 2);
         }
 
         private void Form1_Shown(object sender, EventArgs e)
@@ -439,11 +433,10 @@ namespace Lab6
             switch (PerspectiveBox.SelectedIndex) 
             {
                 case 0:
-                    ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                    camera.ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
                     break;
                 case 1:
-                    //Change This
-                    ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -1f / 200, 0, 0, 0, 1);
+                    camera.ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1f / 200, 0, 0, 0, 0);
                     break;
             }
             draw();
@@ -510,6 +503,45 @@ namespace Lab6
             }
         }
     }
+
+    public class Camera
+    {
+        public Point3d camPos = new Point3d(0, 0, 0);
+        public Point3d camRot = new Point3d(0, 0, 0);
+        public float camDist = 200;
+        public Point3d lookvector;
+        public Matrix ProjectionMatrix = new Matrix(4, 4, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+        public Matrix ViewMatrix;
+        public PointF viewport;
+        //TODO
+        public float projectionDistance;
+
+        public Camera(Point3d camPos, Point3d camRot, float camDist, PointF viewport)
+        {
+            this.camPos = camPos;
+            this.camRot = camRot;
+            this.camDist = camDist;
+            this.viewport = viewport;
+        }
+
+        public void update()
+        {
+            double RX = -Math.PI * camRot.X / 180, RY = -Math.PI * camRot.Y / 180;
+
+            ViewMatrix = new Matrix(4, 4,
+                (float)(Math.Cos(RY)), (float)(Math.Sin(RX) * Math.Sin(RY)), (float)(-Math.Cos(RX) * Math.Sin(RY)), 0,
+                0, (float)((Math.Cos(RX))), (float)(Math.Sin(RX)), 0,
+                (float)((Math.Sin(RY))), (float)((-Math.Sin(RX) * Math.Cos(RY))), (float)(Math.Cos(RX) * Math.Cos(RY)), 0,
+                (float)(-camPos.X * Math.Cos(RY) - camPos.Z * Math.Sin(RY)), (float)(-camPos.X * (Math.Sin(RX) * Math.Sin(RY)) - camPos.Y * (Math.Cos(RX)) - camPos.Z * (-Math.Sin(RX) * Math.Cos(RY))), (float)(-camPos.X * (-Math.Cos(RX) * Math.Sin(RY)) - camPos.Y * (Math.Sin(RX)) - camPos.Z * (Math.Cos(RX) * Math.Cos(RY))) + camDist, 1);
+            RX = Math.PI * camRot.X / 180; RY = Math.PI * camRot.Y / 180;
+            lookvector = (Point3d)(new Point3d(0, 0, 1) * new Matrix(4, 4,
+                (float)Math.Cos(RY), 0, (float)Math.Sin(RY), 0,
+                (float)(Math.Sin(RX) * Math.Sin(RY)), (float)Math.Cos(RX), (float)(Math.Sin(RX) * Math.Cos(RY)), 0,
+                (float)(Math.Cos(RX) * Math.Sin(RY)), (float)(-Math.Sin(RX)), (float)(Math.Cos(RX) * Math.Cos(RY)), 0,
+                0, 0, 0, 1));
+            lookvector.normalize();
+        }
+    }
     /// <summary>
     /// Матрица
     /// </summary>
@@ -557,7 +589,7 @@ namespace Lab6
 
         public static explicit operator Point3d(Matrix matrix)
         {
-            return new Point3d(matrix._matrix[0,0], matrix._matrix[1, 0], matrix._matrix[2, 0]);
+            return new Point3d(matrix._matrix[0, 0] / matrix._matrix[3,0], matrix._matrix[1, 0] / matrix._matrix[3, 0], matrix._matrix[2, 0] / matrix._matrix[3,0]);
         }
     }
     /// <summary>
@@ -580,6 +612,16 @@ namespace Lab6
         public override int GetHashCode() => base.GetHashCode();
         public static bool operator ==(Point3d left, Point3d right) => (left.X == right.X) && (left.Y == right.Y) && (left.Z == right.Z);
         public static bool operator !=(Point3d left, Point3d right) => !((left.X == right.X) && (left.Y == right.Y) && (left.Z == right.Z));
+
+        public static Point3d operator +(Point3d left, Point3d right) => new Point3d(left.X + right.X, left.Y + right.Y, left.Z + right.Z);
+        public static Point3d operator -(Point3d left, Point3d right) => new Point3d(left.X - right.X, left.Y - right.Y, left.Z - right.Z);
+        public static Point3d operator *(Point3d left, float right) => new Point3d(left.X * right, left.Y * right, left.Z * right);
+        public static Point3d operator /(Point3d left, float right) => new Point3d(left.X / right, left.Y / right, left.Z / right);
+        
+        public static float dot(Point3d left, Point3d right) => left.X*right.X + left.Y*right.Y + left.Z*right.Z;
+        public static Point3d cross(Point3d left, Point3d right) => new Point3d(left.Y * right.Z - left.Z * right.Y, left.Z * right.X - left.X * right.Z, left.X * right.Y - left.Y * right.X);
+        public static float cos(Point3d left, Point3d right) => dot(left, right)/(left.Length()*right.Length());
+        public static float sin(Point3d left, Point3d right) => (float)Math.Sqrt(1-Math.Pow(cos(left,right),2));
         public Point3d(float x, float y, float z)
         {
             X = x; Y = y; Z = z;
@@ -596,6 +638,11 @@ namespace Lab6
         {
             return (float)Math.Sqrt(X * X + Y * Y + Z * Z);
         }
+        public void normalize()
+        {
+            float len = Length();
+            X /= len; Y /= len; Z /= len;
+        }
     }   
     
     /// <summary>
@@ -611,23 +658,55 @@ namespace Lab6
             /// positions of the points in the polyhedron. This is going to be "fun"
             /// </summary>
             public List<int> points;
+            public List<int> pointnormals;
+            public int normal;
             public Pen pen;
 
             public Polygon()
             {
                 points = new List<int>();
+                pointnormals = new List<int>();
                 pen = new Pen(Color.Black);
             }
             public Polygon(params int[] points)
             {
                 this.points = points.ToList();
+                pointnormals = new List<int>();
                 pen = new Pen(Color.Black);
             }
 
             public Polygon(Color color, params int[] points)
             {
                 this.points = points.ToList();
+                pointnormals = new List<int>();
                 pen = new Pen(color);
+            }
+            /// <summary>
+            /// Get the center of the polygon in relation to the center of the polyhedron
+            /// </summary>
+            /// <param name="polyhedronPoints"></param>
+            /// <returns></returns>
+            public Point3d Center(ref List<Point3d> polyhedronPoints)
+            {
+                Point3d res = new Point3d();
+                foreach(int ind in points)
+                {
+                    res += polyhedronPoints[ind];
+                }
+                res /= points.Count();
+                return res;
+            }
+            /// <summary>
+            /// FUCK THIS. THIS WORKS ONLY FOR CONVEX POLYGONS.
+            /// </summary>
+            /// <param name="polyhedronPoints"></param>
+            /// <returns></returns>
+            public Point3d Normal(ref List<Point3d> polyhedronPoints)
+            {
+                Point3d vect = Point3d.cross(polyhedronPoints[points[1]] - polyhedronPoints[points[0]], polyhedronPoints[points[2]] - polyhedronPoints[points[0]]);
+                vect.normalize();
+                Point3d cent = Center(ref polyhedronPoints);
+                return Point3d.dot(vect,cent) > 0 ? vect : vect * -1;
             }
         }
         public Point3d Position;
@@ -637,14 +716,6 @@ namespace Lab6
         public List<Point3d> normals;
         public List<Point3d> points;
         public List<Point3d> verticenormals;
-        public PolyHedron() 
-        {
-            Position = new Point3d();
-            Rotation = new Point3d();
-            Scale = new Point3d(1,1,1);
-            polygons = new List<Polygon>();
-            points = new List<Point3d>();
-        }
         public PolyHedron(string filePath, Point3d position, Point3d rotation, Point3d scale)
         {
             Position = position;
@@ -652,6 +723,7 @@ namespace Lab6
             Scale = scale;
             points = new List<Point3d>();
             verticenormals = new List<Point3d>();
+            normals = new List<Point3d>();
             polygons = new List<Polygon>();
             using (FileStream fstream = File.OpenRead(filePath))
             {
@@ -691,6 +763,8 @@ namespace Lab6
                                     {
                                         string[] split2 = split[i].Split('/');
                                         polygon.points.Add(int.Parse(split2[0])-1);
+                                        if (split2.Length >= 3)
+                                            polygon.pointnormals.Add(int.Parse(split2[2]) - 1);
                                     }
                                     polygons.Add(polygon);
                                     break;
@@ -698,6 +772,20 @@ namespace Lab6
                         }
                     }
                 }
+            }
+            foreach (Polygon polygon in polygons)
+            {
+                Point3d n = polygon.Normal(ref points);
+                polygon.normal = normals.Count();
+                if (Point3d.dot(n, verticenormals[polygon.pointnormals[0]]) > 0)
+                    normals.Add(n);
+                else
+                    normals.Add(n * -1);
+            }
+
+            foreach (Point3d p in points)
+            {
+
             }
         }
         public PolyHedron(Point3d[] points, params Polygon[] polygons)
@@ -707,6 +795,7 @@ namespace Lab6
             Scale = new Point3d(1,1,1);
             this.points = points.ToList();
             this.polygons = polygons.ToList();
+            calculateNormals();
         }
         public PolyHedron(Point3d position, Point3d rotation, Point3d scale, Point3d[] points, params Polygon[] polygons)
         {
@@ -715,6 +804,7 @@ namespace Lab6
             Scale = scale;
             this.points = points.ToList();
             this.polygons = polygons.ToList();
+            calculateNormals();
         }
         public PolyHedron(Point3d position, Point3d[] points, params Polygon[] polygons)
         {
@@ -723,10 +813,13 @@ namespace Lab6
             Scale = new Point3d(1, 1, 1);
             this.points = points.ToList();
             this.polygons = polygons.ToList();
+            calculateNormals();
         }
         public void Add(Polygon polygon)
         {
             polygons.Add(polygon);
+            polygon.normal = normals.Count();
+            normals.Add(polygon.Normal(ref this.points));
         }
         /// <summary>
         /// Применяет матрицу к полигону. Изменяет сам многогранник, НЕ ЕГО ОТОБРАЖЕНИЕ. Не проверял, но должно работать.
@@ -753,10 +846,17 @@ namespace Lab6
                     foreach (Polygon poly in this.polygons)
                     {
                         StringBuilder builder = new StringBuilder();
-                        foreach (int point in poly.points)
-                            builder.Append($" {(point+1).ToString(CultureInfo.InvariantCulture)}");
+                        for (int i = 0; i < poly.points.Count(); i++)
+                        {
+                            builder.Append($" {(poly.points[i] + 1).ToString(CultureInfo.InvariantCulture)}//{(poly.pointnormals[i] + 1).ToString(CultureInfo.InvariantCulture)}");
+                        }
                         writer.WriteLine($"f{builder.ToString()}");
-                    }    
+                    } 
+                    
+                    foreach (Point3d point in this.verticenormals)
+                    {
+                        writer.WriteLine($"vn {point.X.ToString(CultureInfo.InvariantCulture)} {point.Y.ToString(CultureInfo.InvariantCulture)} {point.Z.ToString(CultureInfo.InvariantCulture)}");
+                    }
                 }
             }
         }
@@ -766,27 +866,64 @@ namespace Lab6
         /// <param name="g"></param>
         /// <param name="View"> Матрица камеры</param>
         /// <param name="Projection"> Матрица проекций</param>
-        public void draw(Graphics g, PointF viewport, Matrix View, Matrix Projection)
+        public void draw(Graphics g, Camera camera)
         {
             double RX = Math.PI * Rotation.X / 180, RY = Math.PI * Rotation.Y / 180, RZ = Math.PI * Rotation.Z / 180;
-            Matrix WorldMatrix = new Matrix(4, 4,
+            Matrix RotationMatrix = new Matrix(4, 4,
                 (float)(Scale.X*Math.Cos(RY)*Math.Cos(RZ)), (float)(Scale.X*Math.Cos(RY)*Math.Sin(RZ)), (float)(-Scale.X*Math.Sin(RY)), 0,
                 (float)(Scale.Y * (Math.Sin(RX) * Math.Sin(RY) * Math.Cos(RZ) - Math.Cos(RX) * Math.Sin(RZ))), (float)(Scale.Y * (Math.Sin(RX) * Math.Sin(RY) * Math.Sin(RZ) + Math.Cos(RX) * Math.Cos(RZ))), (float)(Scale.Y * Math.Sin(RX) * Math.Cos(RY)), 0,
                 (float)(Scale.Z * (Math.Cos(RX) * Math.Sin(RY) * Math.Cos(RZ) + Math.Sin(RX) * Math.Sin(RZ))), (float)(Scale.Z * (Math.Cos(RX) * Math.Sin(RY) * Math.Sin(RZ) - Math.Sin(RX) * Math.Cos(RZ))), (float)(Scale.Z * Math.Cos(RX) * Math.Cos(RY)), 0,
-                Position.X, Position.Y, Position.Z, 1);
+                0, 0, 0, 1);
+            Matrix ShiftMatrix = new Matrix(4,4,
+                1,0,0,0,
+                0,1,0,0,
+                0,0,1,0,
+                Position.X, Position.Y, Position.Z, 1
+                );
             foreach (var polygon in polygons) {
-                Matrix oldpnt = (points[polygon.points.Last()] * WorldMatrix * View * Projection);
-                for (int i = 0; i < polygon.points.Count; i++)
+                Point3d temp = (Point3d)(normals[polygon.normal] * RotationMatrix);
+                if (Point3d.dot(temp, camera.lookvector) < 0)
                 {
-                    Matrix pnt = (points[polygon.points[i]] * WorldMatrix * View * Projection);
-                    if (oldpnt[2,0]>0 && pnt[2,0]>0)
-                    g.DrawLine(polygon.pen, oldpnt[0, 0] * oldpnt[3,0] + viewport.X/2, oldpnt[1, 0] * oldpnt[3, 0] + viewport.Y/2, pnt[0, 0] * pnt[3, 0] + viewport.X/2, pnt[1, 0] * pnt[3, 0]+ viewport.Y/2);
-                    oldpnt = pnt;
+                    Matrix oldpnt = (points[polygon.points.Last()] * RotationMatrix * ShiftMatrix * camera.ViewMatrix * camera.ProjectionMatrix);
+                    for (int i = 0; i < polygon.points.Count; i++)
+                    {
+                        Matrix pnt = (points[polygon.points[i]] * RotationMatrix * ShiftMatrix * camera.ViewMatrix * camera.ProjectionMatrix);
+                        if (oldpnt[3, 0] > 0 && pnt[3, 0] > 0)
+                            g.DrawLine(polygon.pen, oldpnt[0, 0] / oldpnt[3, 0] + camera.viewport.X / 2, -oldpnt[1, 0] / oldpnt[3, 0] + camera.viewport.Y / 2, pnt[0, 0] / pnt[3, 0] + camera.viewport.X / 2, -pnt[1, 0] / pnt[3, 0] + camera.viewport.Y / 2);
+                        oldpnt = pnt;
+                    }
                 }
             }
         }
         //use index for referencing points
         //mirror for in-world plane
+
+        protected void calculateNormals()
+        {
+            normals = new List<Point3d>();
+            verticenormals = new List<Point3d>();
+            int[] pointcnt = new int[points.Count()];
+
+            for (int i = 0; i < points.Count(); i++)
+            {
+                verticenormals.Add(new Point3d());
+            }
+            foreach (Polygon a in polygons)
+            {
+                a.normal = normals.Count();
+                normals.Add(a.Normal(ref this.points));
+                foreach (int i in a.points)
+                {
+                    a.pointnormals.Add(i);
+                    verticenormals[i] += normals.Last();
+                    pointcnt[i]++;
+                }
+            }
+            for (int i = 0; i < points.Count(); i++)
+            {
+                verticenormals[i] /= pointcnt[i];
+            }
+        }
 
         /// <summary>
         /// Тетраэдр
